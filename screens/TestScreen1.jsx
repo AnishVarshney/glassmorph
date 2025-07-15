@@ -13,7 +13,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import Carousel from './components/Carousel';
+import Carousel from '../components/Carousel';
+import BackButton from '../components/BackButton';
 
 const { width, height } = Dimensions.get('window');
 
@@ -166,6 +167,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ExpoStatusBar style="light" />
+      <BackButton/>
       
       {/* Header */}
       <View style={styles.header}>

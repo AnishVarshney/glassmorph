@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import OptionsToggle from '../components/OptionsToggle';
 import BackButton from '../components/BackButton';
 import CategoryCarousel from '../components/CategoryCarousel';
@@ -40,15 +41,36 @@ const SONGS = [
   },
 ];
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
   const [selected, setSelected] = useState(0);
   return (
     <View style={styles.container}>
-      <OptionsToggle />
-      <BackButton />
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, <Text style={styles.userName}>John Doe</Text></Text>
+      {/* Header */}
+      <View style={styles.headerRow}>
+        {/* Logo (lightning bolt) */}
+        <Ionicons name="flash" size={28} color="#FF3C3C" style={styles.logo} />
+        {/* Greeting */}
+        <View style={styles.greetingContainer}>
+          <Text style={styles.greeting}>Hello, <Text style={styles.userName}>John Doe</Text></Text>
+        </View>
+        {/* Right icons */}
+        <View style={styles.headerIcons}>
+          <TouchableOpacity style={styles.headerIconBtn} activeOpacity={0.7}
+            onPress={() => navigation.navigate('Testing')}
+          >
+            <Ionicons name="notifications-outline" size={24} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.headerIconBtn}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('Settings')}
+          >
+            <Ionicons name="settings-outline" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
       </View>
+      {/* Divider (optional, for Figma look) */}
+      <View style={styles.headerDivider} />
       <Text style={styles.sectionTitle}>Select Categories</Text>
       <CategoryCarousel
         categories={CATEGORIES}
@@ -71,10 +93,22 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     paddingTop: 0,
   },
-  header: {
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: 60,
-    marginBottom: 18,
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
+    marginBottom: 8,
+  },
+  logo: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  greetingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft: 2,
   },
   greeting: {
     color: '#fff',
@@ -85,6 +119,23 @@ const styles = StyleSheet.create({
   userName: {
     fontWeight: 'bold',
     color: '#fff',
+  },
+  headerIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  headerIconBtn: {
+    marginLeft: 12,
+    padding: 6,
+    borderRadius: 16,
+  },
+  headerDivider: {
+    height: 2,
+    backgroundColor: 'rgba(255,255,255,0.13)',
+    marginHorizontal: 18,
+    marginBottom: 18,
+    borderRadius: 2,
   },
   sectionTitle: {
     color: '#fff',
