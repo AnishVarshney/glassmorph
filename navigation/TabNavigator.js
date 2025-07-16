@@ -21,6 +21,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Favorites" component={FavoritesScreen} />
       <Tab.Screen name="Search" component={SearchScreen} />
     </Tab.Navigator>
+    
   );
 };
 

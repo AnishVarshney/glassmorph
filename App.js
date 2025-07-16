@@ -17,7 +17,7 @@ export default function App() {
           title="Timeless"
           subtitle="The Weeknd"
         /> */}
-      </View>
+    </View>
     </SafeAreaProvider>
   );
 }

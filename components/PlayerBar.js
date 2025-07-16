@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TAB_BAR_HEIGHT } from './CustomTabBar';
+import { useNavigation } from '@react-navigation/native';
 // import { BlurView } from 'expo-blur'; // Uncomment for real blur
 
 const { width } = Dimensions.get('window');
@@ -23,8 +24,11 @@ const PlayerBar = ({
   style,
 }) => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   return (
-    <View
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate('Player')}
       style={[
         styles.floatingContainer,
         {
@@ -70,7 +74,7 @@ const PlayerBar = ({
           </View>
         </View>
       </LinearGradient>
-    </View>
+    </TouchableOpacity>
   );
 };
 

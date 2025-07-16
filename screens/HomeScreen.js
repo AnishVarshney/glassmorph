@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import OptionsToggle from '../components/OptionsToggle';
 import BackButton from '../components/BackButton';
 import CategoryCarousel from '../components/CategoryCarousel';
 import SongCarousel from '../components/SongCarousel';
+import ScreenWrapper from '../components/ScreenWrapper';
+import StationCard from '../components/StationCard';
+import PlayerBar from '../components/PlayerBar';
 
 const CATEGORIES = [
   'All',
@@ -41,56 +44,86 @@ const SONGS = [
   },
 ];
 
+const stations = [
+  { id: '1', title: 'Station 01' },
+  { id: '2', title: 'Station 01' },
+  { id: '3', title: 'Station 01' },
+  { id: '4', title: 'Station 01' },
+  { id: '5', title: 'Station 01' },
+  { id: '6', title: 'Station 01' },
+  { id: '7', title: 'Station 01' },
+  { id: '8', title: 'Station 01' },
+  
+];
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_GAP = 12;
+const CARD_MARGIN = 8;
+const cardWidth = (SCREEN_WIDTH - CARD_GAP - CARD_MARGIN * 2) / 2;
+
 const HomeScreen = ({ navigation }) => {
   const [selected, setSelected] = useState(0);
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerRow}>
-        {/* Logo (lightning bolt) */}
-        <Ionicons name="flash" size={28} color="#FF3C3C" style={styles.logo} />
-        {/* Greeting */}
-        <View style={styles.greetingContainer}>
-          <Text style={styles.greeting}>Hello, <Text style={styles.userName}>John Doe</Text></Text>
+    <ScreenWrapper>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          {/* Logo (lightning bolt) */}
+          <Ionicons name="flash" size={28} color="#FF3C3C" style={styles.logo} />
+          {/* Greeting */}
+          <View style={styles.greetingContainer}>
+            <Text style={styles.greeting}>Hello, <Text style={styles.userName}>John Doe</Text></Text>
+          </View>
+          {/* Right icons */}
+          <View style={styles.headerIcons}>
+            <TouchableOpacity style={styles.headerIconBtn} activeOpacity={0.7}
+              onPress={() => navigation.navigate('Testing')}
+            >
+              <Ionicons name="notifications-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.headerIconBtn}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('Settings')}
+            >
+              <Ionicons name="settings-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
-        {/* Right icons */}
-        <View style={styles.headerIcons}>
-          <TouchableOpacity style={styles.headerIconBtn} activeOpacity={0.7}
-            onPress={() => navigation.navigate('Testing')}
-          >
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.headerIconBtn}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('Settings')}
-          >
-            <Ionicons name="settings-outline" size={24} color="#fff" />
-          </TouchableOpacity>
-        </View>
+        {/* Divider (optional, for Figma look) */}
+        <View style={styles.headerDivider} />
+        <Text style={styles.sectionTitle}>Genres</Text>
+        <CategoryCarousel
+          categories={CATEGORIES}
+          selected={selected}
+          onSelect={setSelected}
+        />
+        <SongCarousel
+          title="Popular Songs"
+          songs={SONGS}
+          onPressSong={() => {}}
+          onSeeAll={() => navigation.navigate('Recents')}
+        />
+        {/* <Text style={styles.sectionTitle}>Genres</Text> */}
+        <FlatList
+          data={stations}
+          renderItem={({ item }) => <StationCard title={item.title} cardWidth={cardWidth} />}
+          keyExtractor={item => item.id}
+          numColumns={2}
+          columnWrapperStyle={{ gap: CARD_GAP }}
+          contentContainerStyle={{ padding: CARD_MARGIN }}
+          style={{ marginBottom: 0 }}
+        />
+        <PlayerBar />
       </View>
-      {/* Divider (optional, for Figma look) */}
-      <View style={styles.headerDivider} />
-      <Text style={styles.sectionTitle}>Select Categories</Text>
-      <CategoryCarousel
-        categories={CATEGORIES}
-        selected={selected}
-        onSelect={setSelected}
-      />
-      <SongCarousel
-        title="Popular Songs"
-        songs={SONGS}
-        onPressSong={() => {}}
-        onSeeAll={() => {}}
-      />
-    </View>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'black',
+    // backgroundColor: 'black',
     paddingTop: 0,
   },
   headerRow: {
