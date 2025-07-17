@@ -14,7 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-const Carousel = ({ data, onItemPress, style }) => {
+const Carousel = ({ data, onItemPress, style, onIndexChanged }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollViewRef = useRef(null);
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -27,7 +27,11 @@ const Carousel = ({ data, onItemPress, style }) => {
   const handleMomentumScrollEnd = (event) => {
     const slideSize = event.nativeEvent.layoutMeasurement.width;
     const index = event.nativeEvent.contentOffset.x / slideSize;
-    setActiveIndex(Math.round(index));
+    const roundedIndex = Math.round(index);
+    setActiveIndex(roundedIndex);
+    if (onIndexChanged) {
+      onIndexChanged(roundedIndex);
+    }
   };
 
   const renderItem = ({ item, index }) => {
@@ -117,7 +121,7 @@ const Carousel = ({ data, onItemPress, style }) => {
       >
         {data.map((item, index) => renderItem({ item, index }))}
       </ScrollView>
-      {renderPagination()}
+      {/* {renderPagination()} */}
     </View>
   );
 };

@@ -6,22 +6,21 @@ import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 
 const BackButton = ({
-  top = 16,
-  left = 16,
+  containerStyle,
+  buttonStyle,
   size = 40,
-  style,
+  ...props
 }) => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   //   if (!navigation.canGoBack()) return null;
   return (
-    <View style={[styles.container, style, { top: top + insets.top, left }]}
-      pointerEvents="box-none"
-    >
+    <View style={[{ paddingTop: insets.top + 8 }, containerStyle]} pointerEvents="box-none">
       <TouchableOpacity
-        style={[styles.btn, { width: size, height: size, borderRadius: size / 2 }]}
+        style={[{ width: size, height: size, borderRadius: size / 2 }, styles.btn, buttonStyle]}
         activeOpacity={0.8}
         onPress={() => navigation.goBack()}
+        {...props}
       >
         <BlurView
           intensity={45.4} // From Figma: "Background blur: Blur 45.4" [Image 2, Image 3]
@@ -40,12 +39,6 @@ const BackButton = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    zIndex: 100,
-    alignItems: 'flex-start',
-    pointerEvents: 'box-none',
-  },
   btn: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -79,7 +72,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    // The background color for the icon container is handled by the BlurView's backgroundColor
   },
 });
 

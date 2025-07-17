@@ -7,41 +7,45 @@ import {
   TouchableOpacity,
   StatusBar,
   SafeAreaView,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import GlassCard from '../components/GlassCard';
+import { BlurView } from 'expo-blur';
+import Grain from '../assets/Grain.png'; // PNG grain texture
 import BackButton from '../components/BackButton';
 import OptionsToggle from '../components/OptionsToggle';
 import Carousel from '../components/Carousel';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
 
-const PlayerScreen = () => {
-  // Sample data for the carousel
-  const albumData = [
-    {
-      id: 1,
-      image: 'https://i.scdn.co/image/ab67616d0000b273ef017e899c0547766997d874',
-      title: 'Timeless',
-      subtitle: 'The Weeknd',
-      album: 'HURRY UP TOMORROW',
-    },
-    {
-      id: 2,
-      image: 'https://i.scdn.co/image/ab67616d0000b273a048415db06a5b6fa7ec4e1a',
-      title: 'Blinding Lights',
-      subtitle: 'The Weeknd',
-      album: 'After Hours',
-    },
-    {
-      id: 3,
-      image: 'https://i.scdn.co/image/ab67616d0000b273274b406a7e18acebcf743079',
-      title: 'Save Your Tears',
-      subtitle: 'The Weeknd',
-      album: 'After Hours',
-    },
-  ];
+const albumData = [
+  {
+    id: 1,
+    image: 'https://i.scdn.co/image/ab67616d0000b273ef017e899c0547766997d874',
+    title: 'Timeless',
+    subtitle: 'The Weeknd',
+    album: 'HURRY UP TOMORROW',
+  },
+  {
+    id: 2,
+    image: 'https://i.scdn.co/image/ab67616d0000b273a048415db06a5b6fa7ec4e1a',
+    title: 'Blinding Lights',
+    subtitle: 'The Weeknd',
+    album: 'After Hours',
+  },
+  {
+    id: 3,
+    image: 'https://i.scdn.co/image/ab67616d0000b273274b406a7e18acebcf743079',
+    title: 'Save Your Tears',
+    subtitle: 'The Weeknd',
+    album: 'After Hours',
+  },
+];
 
+const IMAGE_WIDTH = Math.min(width * 0.8, 321);
+
+const PlayerScreen = () => {
   const [currentTrack, setCurrentTrack] = useState(albumData[0]);
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0.6);
@@ -50,28 +54,67 @@ const PlayerScreen = () => {
     setCurrentTrack(item);
   };
 
+  const handleCarouselIndexChanged = (index) => {
+    setCurrentTrack(albumData[index]);
+  };
+
   return (
-    <GlassCard
-      style={StyleSheet.absoluteFill}
-      intensity={100}
-      contentStyle={{ flex: 1 }}
-    >
-      {/* <StatusBar barStyle="light-content" backgroundColor="transparent" translucent /> */}
+    <View style={{ flex: 1 }}>
+      {/* 1. Fullscreen Album Image */}
+      <Image
+        source={{ uri: currentTrack.image }}
+        style={StyleSheet.absoluteFill}
+        resizeMode='stretch'
+        blurRadius={0}
+      />
+      {/* 2. Black Overlay */}
+      <View style={styles.blackOverlay} pointerEvents="none" />
+      {/* 3. Grain Overlay */}
+      <Image
+        source={Grain}
+        style={[StyleSheet.absoluteFill, { opacity: 0.08, zIndex: 2 }]}
+        resizeMode="cover"
+        pointerEvents="none"
+      />
+      {/* 4. White Overlay */}
+      <View style={styles.whiteOverlay} pointerEvents="none" />
+      {/* 5. Blur */}
+      <BlurView
+        intensity={100}
+        tint="dark"
+        style={StyleSheet.absoluteFill}
+        pointerEvents="none"
+      />
+      {/* 6. Foreground Content */}
       <SafeAreaView style={styles.safeArea}>
-        {/* Top Section with Back Button and Options */}
-        <View style={styles.topSection}>
-          <BackButton />
-          <View style={styles.topCenter}>
-            <Text style={styles.playingFromText}>PLAYING FROM ARTIST</Text>
-            <Text style={styles.artistName}>The Weeknd</Text>
-          </View>
-          <OptionsToggle />
+        {/* Top floating buttons */}
+        <BackButton
+          containerStyle={{
+            position: 'absolute',
+            left: 16,
+            top: 0,
+            zIndex: 100,
+          }}
+        />
+        <OptionsToggle
+          containerStyle={{
+            position: 'absolute',
+            right: 16,
+            top: 0,
+            zIndex: 100,
+          }}
+        />
+        {/* Top Center Info */}
+        <View style={styles.topCenter}>
+          <Text style={styles.playingFromText}>PLAYING FROM ARTIST</Text>
+          <Text style={styles.artistName}>The Weeknd</Text>
         </View>
         {/* Carousel Section */}
         <View style={styles.carouselSection}>
           <Carousel
             data={albumData}
             onItemPress={handleCarouselItemPress}
+            onIndexChanged={handleCarouselIndexChanged}
             style={styles.carousel}
           />
         </View>
@@ -94,13 +137,28 @@ const PlayerScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-        {/* Progress Bar Section */}
-        <View style={styles.progressSection}>
-          <View style={styles.progressContainer}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-            </View>
+        {/* LIVE Bar Section */}
+        <View style={styles.liveBarWrapper}>
+          <View style={styles.liveBarRow}>
+            <LinearGradient
+              colors={[
+                'rgba(255,255,255,0.9)', // 0%
+                'rgba(191,191,191,0)',   // 40%
+              ]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.liveBarHalf}
+            />
             <Text style={styles.liveText}>LIVE</Text>
+            <LinearGradient
+              colors={[
+                'rgba(191,191,191,0)',   // 60%
+                'rgba(255,255,255,0.9)', // 100%
+              ]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.liveBarHalf}
+            />
           </View>
         </View>
         {/* Media Controls */}
@@ -112,43 +170,40 @@ const PlayerScreen = () => {
             style={styles.playButton}
             onPress={() => setIsPlaying(!isPlaying)}
           >
-            <GlassCard style={styles.playButtonGlass} intensity={30}>
+            <View style={styles.playButtonGlass}>
               <Ionicons 
                 name={isPlaying ? "pause" : "play"} 
                 size={36} 
                 color="#fff" 
                 style={styles.playIcon}
               />
-            </GlassCard>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity style={styles.controlButton}>
             <Ionicons name="play-skip-forward" size={32} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-    </GlassCard>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // backgroundColor: '#000',
+  blackOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#000',
+    opacity: 0.25,
+    zIndex: 1,
   },
-  backgroundBlur: {
-    // position: 'absolute',
-    // top: 0,
-    // left: 0,
-    // right: 0,
-    // bottom: 0,
-    // backgroundColor: 'rgba(20,20,20,0.9)',
-  },
-  gradientOverlay: {
-    flex: 1,
+  whiteOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#fff',
+    opacity: 0.03,
+    zIndex: 3,
   },
   safeArea: {
     flex: 1,
-    paddingHorizontal: 0,
+    zIndex: 10,
   },
   topSection: {
     flexDirection: 'row',
@@ -160,7 +215,7 @@ const styles = StyleSheet.create({
   },
   topCenter: {
     alignItems: 'center',
-    flex: 1,
+    // flex: 1,
   },
   playingFromText: {
     fontSize: 12,
@@ -240,30 +295,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 1,
   },
-  progressSection: {
-    paddingHorizontal: 20,
-    marginBottom: 40,
-  },
-  progressContainer: {
+  liveBarWrapper: {
     alignItems: 'center',
+    marginVertical: 18,
   },
-  progressBar: {
-    width: '100%',
-    height: 4,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    borderRadius: 2,
-    marginBottom: 8,
+  liveBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: IMAGE_WIDTH,
+    height: 7,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 2,
+  liveBarHalf: {
+    flex: 1,
+    height: 7,
+    borderRadius: 3.5,
   },
   liveText: {
-    fontSize: 12,
     color: 'rgba(255,255,255,0.7)',
-    fontWeight: '600',
+    height:  18,
+    fontSize: 15,
+    fontFamily: 'DMSans-Bold', // Make sure DM Sans is loaded in your project
+    fontWeight: 'bold',
     letterSpacing: 1,
+    marginHorizontal: 12,
+    backgroundColor: 'transparent',
+    zIndex: 2,
   },
   controlsSection: {
     flexDirection: 'row',
