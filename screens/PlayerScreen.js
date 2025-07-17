@@ -8,11 +8,7 @@ import {
   StatusBar,
   SafeAreaView,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-
-// Import the provided components
 import GlassCard from '../components/GlassCard';
 import BackButton from '../components/BackButton';
 import OptionsToggle from '../components/OptionsToggle';
@@ -55,19 +51,12 @@ const PlayerScreen = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      {/* Glassy gradient background */}
-      <LinearGradient
-        colors={["rgba(255,255,255,0.13)", "rgba(255,255,255,0.07)"]}
-        style={StyleSheet.absoluteFill}
-      />
-      {/* Optional: Add BlurView for extra glass effect */}
-      <BlurView
-        intensity={45.4}
-        tint="dark"
-        style={StyleSheet.absoluteFill}
-      />
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+    <GlassCard
+      style={StyleSheet.absoluteFill}
+      intensity={100}
+      contentStyle={{ flex: 1 }}
+    >
+      {/* <StatusBar barStyle="light-content" backgroundColor="transparent" translucent /> */}
       <SafeAreaView style={styles.safeArea}>
         {/* Top Section with Back Button and Options */}
         <View style={styles.topSection}>
@@ -78,9 +67,6 @@ const PlayerScreen = () => {
           </View>
           <OptionsToggle />
         </View>
-
-
-
         {/* Carousel Section */}
         <View style={styles.carouselSection}>
           <Carousel
@@ -89,7 +75,6 @@ const PlayerScreen = () => {
             style={styles.carousel}
           />
         </View>
-
         {/* Track Info Section */}
         <View style={styles.trackInfoSection}>
           <View style={styles.trackInfo}>
@@ -109,7 +94,6 @@ const PlayerScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-
         {/* Progress Bar Section */}
         <View style={styles.progressSection}>
           <View style={styles.progressContainer}>
@@ -119,13 +103,11 @@ const PlayerScreen = () => {
             <Text style={styles.liveText}>LIVE</Text>
           </View>
         </View>
-
         {/* Media Controls */}
         <View style={styles.controlsSection}>
           <TouchableOpacity style={styles.controlButton}>
             <Ionicons name="play-skip-back" size={32} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
-          
           <TouchableOpacity 
             style={styles.playButton}
             onPress={() => setIsPlaying(!isPlaying)}
@@ -139,15 +121,12 @@ const PlayerScreen = () => {
               />
             </GlassCard>
           </TouchableOpacity>
-          
           <TouchableOpacity style={styles.controlButton}>
             <Ionicons name="play-skip-forward" size={32} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
         </View>
-
-        
       </SafeAreaView>
-    </View>
+    </GlassCard>
   );
 };
 
@@ -157,12 +136,12 @@ const styles = StyleSheet.create({
     // backgroundColor: '#000',
   },
   backgroundBlur: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(20,20,20,0.9)',
+    // position: 'absolute',
+    // top: 0,
+    // left: 0,
+    // right: 0,
+    // bottom: 0,
+    // backgroundColor: 'rgba(20,20,20,0.9)',
   },
   gradientOverlay: {
     flex: 1,
