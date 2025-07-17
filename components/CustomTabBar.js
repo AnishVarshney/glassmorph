@@ -3,17 +3,16 @@ import { View, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { BAR_WIDTH, BAR_HEIGHT, BAR_RADIUS } from '../constants/ui';
+import GlassCard from './GlassCard';
 // import { BlurView } from 'expo-blur'; // Uncomment if you want real blur
 
 const { width } = Dimensions.get('window');
 
 // Responsive sizing based on screen width
-const PILL_WIDTH = Math.max(220, Math.min(width * 0.74, 360)); // 74% of screen, min 220, max 360
-const PILL_HEIGHT = Math.max(56, Math.min(width * 0.17, 70)); // 17% of screen, min 56, max 70
-const PILL_RADIUS = PILL_HEIGHT / 2; // Fully rounded
-const SEARCH_SIZE = PILL_HEIGHT; // Search button matches pill height
+// Remove PILL_WIDTH, PILL_HEIGHT, PILL_RADIUS, SEARCH_SIZE, TAB_BAR_HEIGHT
 
-export const TAB_BAR_HEIGHT = PILL_HEIGHT;
+export const TAB_BAR_HEIGHT = BAR_HEIGHT;
 
 const TAB_ICONS = [
   { name: 'home-outline', focused: 'home' },
@@ -33,17 +32,25 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
       <View style={styles.innerRow}>
         {/* Optionally wrap in BlurView for real blur effect */}
         {/* <BlurView intensity={45} tint="dark" style={[styles.pill, pillDynamicStyle]}> */}
-        <LinearGradient
-          colors={["rgba(255,255,255,0.20)", "rgba(255,255,255,0.07)"]}
-          style={[styles.pill, {
-            width: PILL_WIDTH,
-            height: PILL_HEIGHT,
-            borderRadius: PILL_RADIUS,
-            shadowRadius: 20,
-            shadowOpacity: 0.15,
-          }]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <GlassCard
+          style={[
+            styles.pill,
+            {
+              width: BAR_WIDTH,
+              height: BAR_HEIGHT,
+              borderRadius: BAR_RADIUS,
+              shadowRadius: 20,
+              shadowOpacity: 0.15,
+            },
+          ]}
+          contentStyle={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between', // or 'center' if you prefer
+            flex: 1,
+            height: '100%',
+            paddingHorizontal: 0, // or adjust as needed
+          }}
         >
           {state.routes.slice(0, 3).map((route, idx) => {
             const isFocused = state.index === idx;
@@ -60,7 +67,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                 accessibilityRole="button"
                 accessibilityState={isFocused ? { selected: true } : {}}
                 onPress={onPress}
-                style={[styles.pillTab, { height: PILL_HEIGHT }]}
+                style={[styles.pillTab, { height: BAR_HEIGHT }]}
                 activeOpacity={0.7}
               >
                 <Ionicons
@@ -72,32 +79,28 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
               </TouchableOpacity>
             );
           })}
-        </LinearGradient>
+        </GlassCard>
         {/* </BlurView> */}
         {/* Search Button */}
-        <View style={[styles.searchButtonWrapper, { height: PILL_HEIGHT }]}> 
+        <View style={[styles.searchButtonWrapper, { height: BAR_HEIGHT }]}> 
           <TouchableOpacity
             style={[styles.searchButton, {
-              width: SEARCH_SIZE,
-              height: SEARCH_SIZE,
-              borderRadius: SEARCH_SIZE / 2,
+              width: BAR_HEIGHT,
+              height: BAR_HEIGHT,
+              borderRadius: BAR_RADIUS,
               shadowRadius: 20,
               shadowOpacity: 0.15,
             }]}
             activeOpacity={0.8}
             onPress={() => navigation.navigate(state.routes[3].name)}
           >
-            <LinearGradient
-              colors={["rgba(255,255,255,0.20)", "rgba(255,255,255,0.07)"]}
-              style={[styles.searchButtonInner, {
-                width: SEARCH_SIZE,
-                height: SEARCH_SIZE,
-                borderRadius: SEARCH_SIZE / 2,
+            <GlassCard style={[styles.searchButtonInner, {
+                width: BAR_HEIGHT,
+                height: BAR_HEIGHT,
+                borderRadius: BAR_RADIUS,
                 borderWidth: 1,
                 borderColor: 'rgba(255,255,255,0.16)',
               }]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
             >
               <Ionicons
                 name={state.index === 3 ? 'search' : 'search-outline'}
@@ -105,7 +108,7 @@ const CustomTabBar = ({ state, descriptors, navigation }) => {
                 color={state.index === 3 ? activeColor : inactiveColor}
                 style={{ opacity: state.index === 3 ? 1 : 0.7 }}
               />
-            </LinearGradient>
+            </GlassCard>
           </TouchableOpacity>
         </View>
       </View>

@@ -2,7 +2,20 @@ import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 
-const GlassCard = ({ children, style, intensity = 45.4 }) => { // Updated default intensity to 45.4 from Figma
+/**
+ * GlassCard is a highly flexible glassmorphic card component.
+ * - Use `style` to customize the outer BlurView (borderRadius, background, etc).
+ * - Use `contentStyle` to customize the inner View (layout, padding, etc).
+ * - All other props are passed to BlurView.
+ *
+ * @param {object} props
+ * @param {React.ReactNode} props.children - Content inside the card
+ * @param {object} [props.style] - Style for the BlurView (outer container)
+ * @param {object} [props.contentStyle] - Style for the inner View (content container)
+ * @param {number} [props.intensity] - Blur intensity (default: 45.4)
+ * @param {object} [props.*] - Any other BlurView props
+ */
+const GlassCard = ({ children, style, contentStyle, intensity = 45.4, ...props }) => {
   return (
     <BlurView
       intensity={intensity}
@@ -10,8 +23,9 @@ const GlassCard = ({ children, style, intensity = 45.4 }) => { // Updated defaul
       experimentalBlurMethod="dimezisBlurView" // Essential for enabling blur on Android [1]
       reducedTransparencyFallbackColor="black" // Good practice for accessibility [2, 1]
       style={[styles.blur, style]}
+      {...props}
     >
-      <View style={styles.inner}>{children}</View>
+      <View style={contentStyle}>{children}</View>
     </BlurView>
   );
 };
@@ -36,10 +50,6 @@ const styles = StyleSheet.create({
         // a library like 'react-native-shadow-2' could be considered.[6]
       },
     }),
-  },
-  inner: {
-    padding: 20,
-    // Add any specific styling for the content inside the card here if needed.
   },
 });
 
