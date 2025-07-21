@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import OptionsToggle from '../components/OptionsToggle';
 import BackButton from '../components/BackButton';
 import CategoryCarousel from '../components/CategoryCarousel';
 import SongCarousel from '../components/SongCarousel';

@@ -89,11 +89,13 @@ const PlayerScreen = () => {
       <SafeAreaView style={styles.safeArea}>
         {/* Top floating buttons */}
         <BackButton
+          size={40}
           containerStyle={{
             position: 'absolute',
             left: 16,
-            top: 0,
+            top: 111,
             zIndex: 100,
+            marginRight: 16,
           }}
         />
         <OptionsToggle

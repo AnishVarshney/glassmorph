@@ -9,28 +9,43 @@ const CARD_RADIUS = 16;
 const BOTTOM_ROW_HEIGHT = 48;
 const CARD_SIZE = (width - CARD_MARGIN * 3 - 32) / 2; // 2 columns, 8px margin, 16px padding on each side
 
-const RecentStationGridCard = ({ title, image, onFavorite, onMore }) => (
-  <GlassCard style={styles.card} intensity={45.4} contentStyle={styles.cardContent}>
-    <View style={styles.imageWrapper}>
-      {image ? (
-        <Image source={image} style={styles.img} resizeMode="cover" />
-      ) : (
-        <View style={styles.placeholder} />
-      )}
-    </View>
-    <View style={styles.bottomRow}>
-      <Text style={styles.title} numberOfLines={1}>{title}</Text>
-      <View style={styles.iconRow}>
-        <TouchableOpacity onPress={onFavorite} style={styles.iconButton}>
-          <Ionicons name="heart-outline" size={22} color="#fff" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={onMore} style={[styles.iconButton, { marginLeft: 10 }]}> 
-          <Ionicons name="ellipsis-horizontal" size={22} color="#fff" />
-        </TouchableOpacity>
+const RecentStationGridCard = ({ id, title, image, onFavorite, onOpenMenu }) => {
+  const ellipsisRef = React.useRef();
+  const handleEllipsisPress = () => {
+    if (onOpenMenu) {
+      ellipsisRef.current?.measureInWindow((x, y, width, height) => {
+        onOpenMenu({ id, title, x, y, width, height });
+      });
+    }
+  };
+  return (
+    <GlassCard style={styles.card} intensity={45.4} contentStyle={styles.cardContent}>
+      <View style={styles.imageWrapper}>
+        {image ? (
+          <Image source={image} style={styles.img} resizeMode="cover" />
+        ) : (
+          <View style={styles.placeholder} />
+        )}
       </View>
-    </View>
-  </GlassCard>
-);
+      <View style={styles.bottomRow}>
+        <Text style={styles.title} numberOfLines={1}>{title}</Text>
+        <View style={styles.iconRow}>
+          <TouchableOpacity onPress={onFavorite} style={styles.iconButton}>
+            <Ionicons name="heart-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            ref={ellipsisRef}
+            onPress={handleEllipsisPress}
+            style={[styles.iconButton, { marginLeft: 10 }]}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="ellipsis-vertical" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </GlassCard>
+  );
+};
 
 const styles = StyleSheet.create({
   card: {

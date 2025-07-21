@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import ScreenWrapper from '../components/ScreenWrapper';
@@ -7,129 +7,212 @@ import BackButton from '../components/BackButton';
 import PlayerBar from '../components/PlayerBar';
 import RecentStationRow from '../components/RecentStationRow';
 import RecentStationGridCard from '../components/RecentStationGridCard';
+import OptionsToggle from '../components/OptionsToggle';
 
 const { width, height } = Dimensions.get('window');
 
 const RECENTS = [
   { id: '1', title: 'Station 01' },
-  { id: '2', title: 'Station 01' },
-  { id: '3', title: 'Station 01' },
-  { id: '4', title: 'Station 01' },
-  { id: '5', title: 'Station 01' },
-  { id: '6', title: 'Station 01' },
-  { id: '7', title: 'Station 01' },
-  { id: '8', title: 'Station 01' },
+  { id: '2', title: 'Station 03' },
+  { id: '3', title: 'Station 04' },
+  { id: '4', title: 'Station 05' },
+  { id: '5', title: 'Station 06' },
+  { id: '6', title: 'Station 07' },
+  { id: '7', title: 'Station 08' },
+  { id: '8', title: 'Station 09' },
+];
+
+const STATION_OPTIONS = [
+  { 
+    icon: { type: 'Ionicons', name: 'play-circle-outline', size: 24, color: '#fff' }, 
+    label: 'Play Station' 
+  },
+  { 
+    icon: { type: 'Ionicons', name: 'heart-outline', size: 24, color: '#fff' }, 
+    label: 'Add to Favourites' 
+  },
+  { 
+    icon: { type: 'Ionicons', name: 'share-social-outline', size: 22, color: '#fff' }, 
+    label: 'Share Station' 
+  },
+  { 
+    icon: { type: 'Ionicons', name: 'trash-outline', size: 22, color: '#fff' }, 
+    label: 'Remove from Recents' 
+  },
 ];
 
 const RecentsScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [isGridView, setIsGridView] = useState(false);
+  const [recents, setRecents] = useState(RECENTS);
+  const [menuState, setMenuState] = useState({
+    visible: false,
+    position: { x: 0, y: 0, width: 0, height: 0 },
+    selectedItem: null,
+  });
 
   // Calculate responsive dimensions
-  const headerTopPadding = insets.top + 60; // Space for back button + extra padding
-  const horizontalPadding = Math.max(16, width * 0.04); // Responsive horizontal padding
-  const toggleButtonSize = Math.min(44, width * 0.11); // Responsive toggle button size
+  const horizontalPadding = 20;
+  const backButtonSize = 40;
+  const toggleButtonSize = 44;
+
+  const handleOpenMenu = (menuData) => {
+    setMenuState({
+      visible: true,
+      position: {
+        x: menuData.x,
+        y: menuData.y,
+        width: menuData.width,
+        height: menuData.height,
+      },
+      selectedItem: { id: menuData.id, title: menuData.title },
+    });
+  };
+
+  const handleCloseMenu = () => {
+    setMenuState(prev => ({
+      ...prev,
+      visible: false,
+    }));
+  };
+
+  const handleOptionSelect = (option) => {
+    const { selectedItem } = menuState;
+    
+    switch (option.label) {
+      case 'Play Station':
+        Alert.alert('Play', `Playing "${selectedItem.title}"`);
+        break;
+      case 'Add to Favourites':
+        Alert.alert('Favorite', `Added "${selectedItem.title}" to favorites`);
+        break;
+      case 'Share Station':
+        Alert.alert('Share', `Sharing "${selectedItem.title}"`);
+        break;
+      case 'Remove from Recents':
+        setRecents(prev => prev.filter(item => item.id !== selectedItem.id));
+        Alert.alert('Removed', `"${selectedItem.title}" removed from recents`);
+        break;
+      default:
+        console.log(`Option "${option.label}" selected for ${selectedItem.title}`);
+    }
+  };
+
+  const handleStationFavorite = (stationTitle) => {
+    Alert.alert('Favorite', `Added "${stationTitle}" to favorites`);
+  };
 
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        {/* Back Button - Positioned absolutely like in target design */}
-        <BackButton 
-          containerStyle={[
-            styles.backButtonContainer,
-            {
-              top: insets.top + 16,
-              left: horizontalPadding,
-            }
-          ]}
-          size={Math.min(40, width * 0.1)}
-        />
-
-        {/* Toggle Buttons - Positioned absolutely in top-right */}
+        {/* Header Section */}
         <View 
           style={[
-            styles.toggleContainer,
+            styles.headerSection,
             {
-              top: insets.top + 16,
-              right: horizontalPadding,
+              paddingTop: insets.top + 16,
+              paddingHorizontal: horizontalPadding,
             }
           ]}
         >
-          <View style={[styles.toggleGroup, { height: toggleButtonSize }]}>
-            <TouchableOpacity 
-              onPress={() => setIsGridView(false)} 
-              style={[
-                styles.toggleBtn,
-                isGridView ? styles.toggleBtnInactive : styles.toggleBtnActive,
-                { width: toggleButtonSize, height: toggleButtonSize }
-              ]}
-            >
-              <Ionicons 
-                name="list" 
-                size={Math.min(22, width * 0.055)} 
-                color={isGridView ? 'rgba(255,255,255,0.5)' : '#fff'} 
-              />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => setIsGridView(true)} 
-              style={[
-                styles.toggleBtn,
-                !isGridView ? styles.toggleBtnInactive : styles.toggleBtnActive,
-                { width: toggleButtonSize, height: toggleButtonSize }
-              ]}
-            >
-              <Ionicons 
-                name="grid" 
-                size={Math.min(22, width * 0.055)} 
-                color={!isGridView ? 'rgba(255,255,255,0.5)' : '#fff'} 
-              />
-            </TouchableOpacity>
+          {/* Header Row with Back Button and Title */}
+          <View style={styles.headerRow}>
+            <BackButton 
+              size={backButtonSize}
+              containerStyle={styles.backButtonContainer}
+            />
+            <Text style={styles.headerTitle}>Recents</Text>
+          </View>
+
+          {/* Toggle Buttons Row */}
+          <View style={styles.toggleRow}>
+            <View style={[styles.toggleGroup, { height: toggleButtonSize }]}>
+              <TouchableOpacity 
+                onPress={() => setIsGridView(false)} 
+                style={[
+                  styles.toggleBtn,
+                  isGridView ? styles.toggleBtnInactive : styles.toggleBtnActive,
+                  { width: toggleButtonSize, height: toggleButtonSize }
+                ]}
+              >
+                <Ionicons 
+                  name="list" 
+                  size={22} 
+                  color={isGridView ? 'rgba(255,255,255,0.5)' : '#fff'} 
+                />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => setIsGridView(true)} 
+                style={[
+                  styles.toggleBtn,
+                  !isGridView ? styles.toggleBtnInactive : styles.toggleBtnActive,
+                  { width: toggleButtonSize, height: toggleButtonSize }
+                ]}
+              >
+                <Ionicons 
+                  name="grid" 
+                  size={22} 
+                  color={!isGridView ? 'rgba(255,255,255,0.5)' : '#fff'} 
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
-        {/* Main Content */}
+        {/* Content Section */}
         <View 
           style={[
             styles.contentContainer,
             {
-              paddingTop: headerTopPadding,
               paddingHorizontal: horizontalPadding,
               paddingBottom: insets.bottom + 120, // Space for PlayerBar
             }
           ]}
         >
-          {/* Header */}
-          <View style={styles.headerContainer}>
-            <Text style={[styles.header, { fontSize: Math.min(32, width * 0.08) }]}>
-              Recents
-            </Text>
-          </View>
-
-          {/* List */}
           <FlatList
-            data={RECENTS}
+            data={recents}
             renderItem={({ item }) =>
               isGridView
-                ? <RecentStationGridCard title={item.title} />
-                : <RecentStationRow title={item.title} />
+                ? <RecentStationGridCard 
+                    id={item.id}
+                    title={item.title}
+                    onOpenMenu={handleOpenMenu}
+                    onFavorite={handleStationFavorite}
+                  />
+                : <RecentStationRow 
+                    id={item.id}
+                    title={item.title} 
+                    onOpenMenu={handleOpenMenu}
+                    onFavorite={handleStationFavorite}
+                  />
             }
             keyExtractor={item => item.id}
             numColumns={isGridView ? 2 : 1}
-            key={isGridView ? 'grid' : 'list'} // force re-render on toggle
-            contentContainerStyle={[
-              styles.listContent,
-              {
-                paddingBottom: 20,
-              }
-            ]}
+            key={isGridView ? 'grid' : 'list'}
+            contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
             columnWrapperStyle={isGridView ? styles.gridRow : null}
             ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+            ListEmptyComponent={() => (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No recent stations</Text>
+              </View>
+            )}
           />
         </View>
 
         {/* Player Bar */}
         <PlayerBar />
+
+        {/* Floating Options Menu */}
+        <OptionsToggle
+          visible={menuState.visible}
+          options={STATION_OPTIONS}
+          position={menuState.position}
+          onClose={handleCloseMenu}
+          onOptionSelect={handleOptionSelect}
+          menuWidth={200}
+        />
       </View>
     </ScreenWrapper>
   );
@@ -138,15 +221,26 @@ const RecentsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    position: 'relative',
+  },
+  headerSection: {
+    paddingBottom: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   backButtonContainer: {
-    position: 'absolute',
-    zIndex: 100,
+    marginRight: 16, // Spacing between back button and title
   },
-  toggleContainer: {
-    position: 'absolute',
-    zIndex: 100,
+  headerTitle: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+    flex: 1,
+  },
+  toggleRow: {
     alignItems: 'flex-end',
   },
   toggleGroup: {
@@ -171,21 +265,23 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
   },
-  headerContainer: {
-    marginBottom: 24,
-    alignItems: 'flex-start',
-  },
-  header: {
-    color: '#fff',
-    fontWeight: '700',
-    letterSpacing: -0.5,
-  },
   listContent: {
-    flexGrow: 1,
+    paddingBottom: 20,
   },
   gridRow: {
     justifyContent: 'space-between',
     paddingHorizontal: 0,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+  },
+  emptyText: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 16,
+    fontWeight: '400',
   },
 });
 

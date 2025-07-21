@@ -2,23 +2,20 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import GlassCard from './GlassCard';
 import { Ionicons } from '@expo/vector-icons';
-import OptionsToggle from './OptionsToggle';
 
-const STATION_OPTIONS = [
-  { icon: { type: 'Ionicons', name: 'play-circle-outline', size: 24, color: '#fff' }, label: 'Play Station' },
-  { icon: { type: 'Ionicons', name: 'heart-outline', size: 24, color: '#fff' }, label: 'Add to Favourites' },
-  { icon: { type: 'Ionicons', name: 'share-social-outline', size: 22, color: '#fff' }, label: 'Share Station' },
-  { icon: { type: 'Ionicons', name: 'trash-outline', size: 22, color: '#fff' }, label: 'Remove from Recents' },
-];
+
 
 const RecentStationRow = ({ 
   title, 
   image, 
   onFavorite, 
   onMore,
-  onOptionSelect 
+  onOptionSelect,
+  onOpenMenu, // NEW PROP
+  id // NEW PROP for identifying the row
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const ellipsisRef = React.useRef();
 
   const handleOptionSelect = (option) => {
     if (onOptionSelect) {
@@ -30,6 +27,14 @@ const RecentStationRow = ({
   const handleFavorite = () => {
     if (onFavorite) {
       onFavorite(title);
+    }
+  };
+
+  const handleEllipsisPress = () => {
+    if (onOpenMenu) {
+      ellipsisRef.current?.measureInWindow((x, y, width, height) => {
+        onOpenMenu({ id, title, x, y, width, height });
+      });
     }
   };
 
@@ -51,34 +56,20 @@ const RecentStationRow = ({
         <TouchableOpacity onPress={handleFavorite} style={styles.iconButton}>
           <Ionicons name="heart-outline" size={24} color="#fff" />
         </TouchableOpacity>
-        
-        {/* Options Toggle integrated into the row */}
-        <View style={styles.optionsContainer}>
-          <OptionsToggle
-            options={STATION_OPTIONS}
-            isAbsolute={false}
-            menuWidth={200}
-            buttonSize={24}
-            isOpen={isMenuOpen}
-            onToggle={setIsMenuOpen}
-            onOptionSelect={handleOptionSelect}
-            renderCustomButton={(onPress, isOpen) => (
-              <TouchableOpacity 
-                onPress={onPress} 
-                style={[styles.iconButton, { marginLeft: 12 }]}
-                activeOpacity={0.7}
-              >
-                <Ionicons 
-                  name="ellipsis-vertical" 
-                  size={24} 
-                  color="#fff" 
-                  style={{ opacity: isOpen ? 1 : 0.8 }}
-                />
-              </TouchableOpacity>
-            )}
-            containerStyle={styles.optionsToggleContainer}
+        {/* Ellipsis Button - triggers menu in parent */}
+        <TouchableOpacity
+          ref={ellipsisRef}
+          onPress={handleEllipsisPress}
+          style={[styles.iconButton, { marginLeft: 12 }]}
+          activeOpacity={0.7}
+        >
+          <Ionicons 
+            name="ellipsis-vertical" 
+            size={24} 
+            color="#fff" 
+            style={{ opacity: 1 }}
           />
-        </View>
+        </TouchableOpacity>
       </View>
     </GlassCard>
   );

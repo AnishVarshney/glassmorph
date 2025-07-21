@@ -1,44 +1,110 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { useNavigation } from '@react-navigation/native';
 
+const { width } = Dimensions.get('window');
+
 const BackButton = ({
-  containerStyle,
-  buttonStyle,
+  onPress,
   size = 40,
+  iconSize,
+  iconName = 'chevron-back',
+  iconColor = '#fff',
+  style,
+  containerStyle,
+  absolute = false,
+  top = 0,
+  left = 0,
   ...props
 }) => {
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
-  //   if (!navigation.canGoBack()) return null;
-  return (
-    <View style={[{ paddingTop: insets.top + 8 }, containerStyle]} pointerEvents="box-none">
-      <TouchableOpacity
-        style={[{ width: size, height: size, borderRadius: size / 2 }, styles.btn, buttonStyle]}
-        activeOpacity={0.8}
-        onPress={() => navigation.goBack()}
-        {...props}
+  
+  // Calculate responsive sizes
+  const buttonSize = Math.min(size, width * 0.12);
+  const calculatedIconSize = iconSize || Math.min(28, buttonSize * 0.7);
+
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+    } else if (navigation.canGoBack()) {
+      navigation.goBack();
+    }
+  };
+
+  const buttonContent = (
+    <TouchableOpacity
+      style={[
+        styles.btn,
+        { 
+          width: buttonSize, 
+          height: buttonSize, 
+          borderRadius: buttonSize / 2 
+        },
+        style
+      ]}
+      activeOpacity={0.8}
+      onPress={handlePress}
+      {...props}
+    >
+      <BlurView
+        intensity={45.4}
+        tint="dark"
+        experimentalBlurMethod="dimezisBlurView"
+        reducedTransparencyFallbackColor="black"
+        style={[
+          styles.blurViewStyle,
+          { borderRadius: buttonSize / 2 }
+        ]}
       >
-        <BlurView
-          intensity={45.4} // From Figma: "Background blur: Blur 45.4" [Image 2, Image 3]
-          tint="dark" // Keeping tint="dark" as it aligns with the overall dark UI feel
-          experimentalBlurMethod="dimezisBlurView" // Essential for enabling blur on Android [2]
-          reducedTransparencyFallbackColor="black" // Good practice for accessibility [3]
-          style={styles.blurViewStyle}
-        >
-          <View style={styles.iconContainer}>
-            <Ionicons name="chevron-back" size={28} color="#fff" />
-          </View>
-        </BlurView>
-      </TouchableOpacity>
+        <View style={styles.iconContainer}>
+          <Ionicons 
+            name={iconName} 
+            size={calculatedIconSize} 
+            color={iconColor} 
+          />
+        </View>
+      </BlurView>
+    </TouchableOpacity>
+  );
+
+  if (absolute) {
+    return (
+      <View 
+        style={[
+          styles.absoluteContainer,
+          {
+            top,
+            left,
+          },
+          containerStyle
+        ]} 
+        pointerEvents="box-none"
+      >
+        {buttonContent}
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, containerStyle]} pointerEvents="box-none">
+      {buttonContent}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    alignItems: 'flex-start',
+    pointerEvents: 'box-none',
+  },
+  absoluteContainer: {
+    position: 'absolute',
+    zIndex: 100,
+    alignItems: 'flex-start',
+    pointerEvents: 'box-none',
+  },
   btn: {
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -48,23 +114,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   blurViewStyle: {
-    flex: 1, // Make BlurView fill the TouchableOpacity's dimensions
-    borderRadius: 20, // Half of the 40px size for a perfect circle (Figma "Radius 100px" implies circular shape) [Image 2]
-    overflow: 'hidden', // Crucial for borderRadius to clip the blur and content correctly [5]
-    backgroundColor: 'rgba(255, 255, 255, 0.2)', // From Figma: "Colors: #FFFFFF 20%" [Image 2]
-    borderWidth: 1, // From Figma: "Borders: 1px" [Image 2]
-    borderColor: 'rgba(255, 255, 255, 0.16)', // From Figma: "Borders: #FFFFFF 16%" [Image 2]
-    ...Platform.select({ // Applying platform-specific shadow properties [6, 7]
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+    ...Platform.select({
       ios: {
-        shadowColor: 'rgba(0, 0, 0, 0.15)', // From Figma: "#000000 15%" [Image 2]
-        shadowOffset: { width: 3, height: 4 }, // From Figma: "X 3 Y 4" [Image 2]
-        shadowOpacity: 0.15, // From Figma: "15%" [Image 2]
-        shadowRadius: 20, // From Figma: "Blur 20" [Image 2]
+        shadowColor: 'rgba(0, 0, 0, 0.15)',
+        shadowOffset: { width: 3, height: 4 },
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
       },
       android: {
-        elevation: 20, // Android's elevation property for shadows and Z-order. Setting it to match the blur radius for visual depth. [8, 5]
-        // For more precise Android shadow control, especially for older APIs,
-        // a library like 'react-native-shadow-2' could be considered. [7]
+        elevation: 20,
       },
     }),
   },
@@ -75,4 +138,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BackButton; 
+export default BackButton;

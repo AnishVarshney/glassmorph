@@ -7,7 +7,7 @@ import ScreenWrapper from '../components/ScreenWrapper';
 const FavoritesScreen = () => (
   <ScreenWrapper>
     <View style={styles.container}>
-      <BackButton />
+      <BackButton size={40} containerStyle={{ marginTop: 40, marginLeft: 0, marginRight: 16 }} />
       <NoFavorites onExplore={() => {}} />
     </View>
   </ScreenWrapper>
