@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 3, height: 4 },
     elevation: 6,
-    marginRight: 18,
+    marginRight: 8,
     paddingHorizontal: 18,
   },
   pillTab: {

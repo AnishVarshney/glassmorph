@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Dimensions, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import OptionsToggle from '../components/OptionsToggle';
 import BackButton from '../components/BackButton';
 import CategoryCarousel from '../components/CategoryCarousel';
 import SongCarousel from '../components/SongCarousel';
+import StoryCard from '../components/StoryCard';
 import ScreenWrapper from '../components/ScreenWrapper';
-import StationCard from '../components/StationCard';
 import PlayerBar from '../components/PlayerBar';
 
 const CATEGORIES = [
@@ -44,25 +44,77 @@ const SONGS = [
   },
 ];
 
-const stations = [
-  { id: '1', title: 'Station 01' },
-  { id: '2', title: 'Station 01' },
-  { id: '3', title: 'Station 01' },
-  { id: '4', title: 'Station 01' },
-  { id: '5', title: 'Station 01' },
-  { id: '6', title: 'Station 01' },
-  { id: '7', title: 'Station 01' },
-  { id: '8', title: 'Station 01' },
-  
+// Story stations data with different background colors for variety
+const STORY_STATIONS = [
+  { 
+    id: '1', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)' // Default gray
+  },
+  { 
+    id: '2', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 182, 193, 0.3)' // Light pink
+  },
+  { 
+    id: '3', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)' // Default gray
+  },
+  { 
+    id: '4', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 182, 193, 0.3)' // Light pink
+  },
+  { 
+    id: '5', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)' // Default gray
+  },
+  { 
+    id: '6', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 182, 193, 0.3)' // Light pink
+  },
+  { 
+    id: '7', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)' // Default gray
+  },
+  { 
+    id: '8', 
+    title: 'Station 01',
+    backgroundColor: 'rgba(255, 182, 193, 0.3)' // Light pink
+  },
 ];
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_GAP = 12;
-const CARD_MARGIN = 8;
-const cardWidth = (SCREEN_WIDTH - CARD_GAP - CARD_MARGIN * 2) / 2;
 
 const HomeScreen = ({ navigation }) => {
   const [selected, setSelected] = useState(0);
+
+  const handleStoryPress = (station) => {
+    console.log('Story pressed:', station.title);
+    // Navigate to station or handle story press
+  };
+
+  const renderStoryCard = ({ item, index }) => (
+    <StoryCard
+      title={item.title}
+      backgroundColor={item.backgroundColor}
+      onPress={() => handleStoryPress(item)}
+      style={[
+        styles.storyCard,
+        // Add margin for proper spacing
+        {
+          marginLeft: index % 2 === 0 ? 0 : 6, // Left margin for right column
+          marginRight: index % 2 === 0 ? 6 : 0, // Right margin for left column
+          marginBottom: 12, // Bottom margin between rows
+        }
+      ]}
+    />
+  );
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
@@ -90,31 +142,66 @@ const HomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
-        {/* Divider (optional, for Figma look) */}
+
+        {/* Divider */}
         <View style={styles.headerDivider} />
-        <Text style={styles.sectionTitle}>Genres</Text>
-        <CategoryCarousel
-          categories={CATEGORIES}
-          selected={selected}
-          onSelect={setSelected}
-        />
-        <SongCarousel
-          title="Popular Songs"
-          songs={SONGS}
-          onPressSong={() => {}}
-          onSeeAll={() => navigation.navigate('Recents')}
-        />
-        {/* <Text style={styles.sectionTitle}>Genres</Text> */}
-        <FlatList
-          data={stations}
-          renderItem={({ item }) => <StationCard title={item.title} cardWidth={cardWidth} />}
-          keyExtractor={item => item.id}
-          numColumns={2}
-          columnWrapperStyle={{ gap: CARD_GAP }}
-          contentContainerStyle={{ padding: CARD_MARGIN }}
-          style={{ marginBottom: 0 }}
-        />
-        <PlayerBar />
+
+        {/* Scrollable content starts here */}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Genres Section */}
+          <Text style={styles.sectionTitle}>Genres</Text>
+          <CategoryCarousel
+            categories={CATEGORIES}
+            selected={selected}
+            onSelect={setSelected}
+          />
+
+          {/* Story Cards Section */}
+          <View style={styles.storySection}>
+            <FlatList
+              data={STORY_STATIONS}
+              renderItem={renderStoryCard}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              scrollEnabled={false}
+              contentContainerStyle={styles.storyGrid}
+              columnWrapperStyle={styles.storyRow}
+            />
+          </View>
+
+          {/* Songs Section */}
+          <SongCarousel
+            title="Recents"
+            songs={SONGS}
+            onPressSong={() => {}}
+            onSeeAll={() => navigation.navigate('Recents')}
+          />
+          <SongCarousel
+            title="Popular Songs"
+            songs={SONGS}
+            onPressSong={() => {}}
+            onSeeAll={() => navigation.navigate('Recents')}
+          />
+          <SongCarousel
+            title="Popular Songs"
+            songs={SONGS}
+            onPressSong={() => {}}
+            onSeeAll={() => navigation.navigate('Recents')}
+          />
+          <SongCarousel
+            title="Popular Songs"
+            songs={SONGS}
+            onPressSong={() => {}}
+            onSeeAll={() => navigation.navigate('Recents')}
+          />
+          <SongCarousel
+            title="Popular Songs"
+            songs={SONGS}
+            onPressSong={() => {}}
+            onSeeAll={() => navigation.navigate('Recents')}
+          />
+          <PlayerBar />
+        </ScrollView>
       </View>
     </ScreenWrapper>
   );
@@ -123,7 +210,6 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // backgroundColor: 'black',
     paddingTop: 0,
   },
   headerRow: {
@@ -178,6 +264,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 8,
   },
+  storySection: {
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  storyGrid: {
+    paddingBottom: 0,
+  },
+  storyRow: {
+    justifyContent: 'space-between',
+  },
+  storyCard: {
+    // Individual card styling handled in component
+  },
 });
 
-export default HomeScreen; 
+export default HomeScreen;
