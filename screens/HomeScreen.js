@@ -199,8 +199,8 @@ const HomeScreen = ({ navigation }) => {
             onPressSong={() => {}}
             onSeeAll={() => navigation.navigate('Recents')}
           />
-          <PlayerBar />
         </ScrollView>
+          {/* <PlayerBar /> */}
       </View>
     </ScreenWrapper>
   );

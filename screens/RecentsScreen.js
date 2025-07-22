@@ -201,8 +201,7 @@ const RecentsScreen = ({ navigation }) => {
           />
         </View>
 
-        {/* Player Bar */}
-        <PlayerBar />
+        {/* <PlayerBar /> */}
 
         {/* Floating Options Menu */}
         <OptionsToggle

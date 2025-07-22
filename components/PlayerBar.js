@@ -6,7 +6,6 @@ import { TAB_BAR_HEIGHT } from './CustomTabBar';
 import { useNavigation } from '@react-navigation/native';
 import { BAR_WIDTH, BAR_HEIGHT, BAR_RADIUS, TAB_SEARCH_MARGIN } from '../constants/ui';
 import GlassCard from './GlassCard';
-// import { BlurView } from 'expo-blur'; // Uncomment for real blur
 
 const { width } = Dimensions.get('window');
 
@@ -25,10 +24,39 @@ const PlayerBar = ({
 }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+
+  const handlePlayerPress = () => {
+    try {
+      // Navigate to Player screen at root level
+      navigation.navigate('Player');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback: try to navigate to root navigator first
+      navigation.getParent()?.navigate('Player');
+    }
+  };
+
+  const handlePlayPress = (event) => {
+    // Prevent event bubbling to parent TouchableOpacity
+    event.stopPropagation();
+    // Handle play/pause logic here
+    console.log('Play/Pause pressed');
+  };
+
+  const handleHeartPress = (event) => {
+    event.stopPropagation();
+    console.log('Heart pressed');
+  };
+
+  const handleAddPress = (event) => {
+    event.stopPropagation();
+    console.log('Add pressed');
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      onPress={() => navigation.navigate('Player')}
+      onPress={handlePlayerPress}
       style={[
         styles.floatingContainer,
         {
@@ -37,7 +65,6 @@ const PlayerBar = ({
         },
         style,
       ]}
-      pointerEvents="box-none"
     >
       <GlassCard
         style={[
@@ -52,19 +79,44 @@ const PlayerBar = ({
         ]}
         contentStyle={styles.contentRow}
       >
-        <Image source={{ uri: image }} style={{ width: ALBUM_SIZE, height: ALBUM_SIZE, borderRadius: ALBUM_SIZE / 3, marginRight: BAR_HEIGHT * 0.18, backgroundColor: '#222' }} />
+        <Image 
+          source={{ uri: image }} 
+          style={{ 
+            width: ALBUM_SIZE, 
+            height: ALBUM_SIZE, 
+            borderRadius: ALBUM_SIZE / 3, 
+            marginRight: BAR_HEIGHT * 0.18, 
+            backgroundColor: '#222' 
+          }} 
+        />
         <View style={styles.textContainer}>
-          <Text style={[styles.title, { fontSize: BAR_HEIGHT * 0.28 }]} numberOfLines={1}>{title}</Text>
-          <Text style={[styles.subtitle, { fontSize: BAR_HEIGHT * 0.19 }]} numberOfLines={1}>{subtitle}</Text>
+          <Text style={[styles.title, { fontSize: BAR_HEIGHT * 0.28 }]} numberOfLines={1}>
+            {title}
+          </Text>
+          <Text style={[styles.subtitle, { fontSize: BAR_HEIGHT * 0.19 }]} numberOfLines={1}>
+            {subtitle}
+          </Text>
         </View>
         <View style={styles.iconRow}>
-          <TouchableOpacity style={[styles.iconButton, { width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2 }]} activeOpacity={0.7}>
+          <TouchableOpacity 
+            style={[styles.iconButton, { width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2 }]} 
+            activeOpacity={0.7}
+            onPress={handleHeartPress}
+          >
             <Ionicons name="heart-outline" size={ICON_SIZE * 0.9} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.iconButton, { width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2 }]} activeOpacity={0.7}>
+          <TouchableOpacity 
+            style={[styles.iconButton, { width: ICON_SIZE, height: ICON_SIZE, borderRadius: ICON_SIZE / 2 }]} 
+            activeOpacity={0.7}
+            onPress={handleAddPress}
+          >
             <Ionicons name="add-circle-outline" size={ICON_SIZE * 0.9} color="#fff" />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.playButton, { width: PLAY_SIZE, height: PLAY_SIZE, borderRadius: PLAY_SIZE / 2 }]} activeOpacity={0.7}>
+          <TouchableOpacity 
+            style={[styles.playButton, { width: PLAY_SIZE, height: PLAY_SIZE, borderRadius: PLAY_SIZE / 2 }]} 
+            activeOpacity={0.7}
+            onPress={handlePlayPress}
+          >
             <Ionicons name="play" size={PLAY_SIZE * 0.7} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -138,4 +190,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PlayerBar; 
+export default PlayerBar;

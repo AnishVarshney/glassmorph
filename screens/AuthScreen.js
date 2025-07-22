@@ -13,275 +13,447 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GlassCard from '../components/GlassCard';
 import ScreenWrapper from '../components/ScreenWrapper';
 import BackButton from '../components/BackButton';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const DM_SANS = Platform.select({ ios: 'DM Sans', android: 'DM Sans', default: 'sans-serif' });
+// Responsive dimensions
+const getResponsiveDimensions = () => {
+  const isSmallScreen = SCREEN_WIDTH < 375;
+  const isMediumScreen = SCREEN_WIDTH >= 375 && SCREEN_WIDTH < 414;
+  const isLargeScreen = SCREEN_WIDTH >= 414;
+
+  return {
+    horizontalPadding: isSmallScreen ? 20 : isMediumScreen ? 24 : 28,
+    headerFontSize: isSmallScreen ? 22 : isMediumScreen ? 24 : 26,
+    subHeaderFontSize: isSmallScreen ? 14 : 16,
+    inputFontSize: isSmallScreen ? 14 : 15,
+    buttonFontSize: isSmallScreen ? 15 : 17,
+    cardPadding: isSmallScreen ? 20 : 24,
+    backButtonSize: isSmallScreen ? 36 : 40,
+  };
+};
 
 const AuthScreen = ({ navigation }) => {
-  const [mode, setMode] = useState('login'); // 'login' or 'signup'
+  const [mode, setMode] = useState('login');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    rememberMe: false,
+  });
+  
   const anim = useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
+  const dimensions = getResponsiveDimensions();
 
-  // Animate toggle
+  // Optimized animation
   const switchMode = (nextMode) => {
     if (mode === nextMode) return;
+    
     Animated.timing(anim, {
       toValue: nextMode === 'login' ? 0 : 1,
-      duration: 320,
+      duration: 300,
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
     setMode(nextMode);
   };
 
-  // Form state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [remember, setRemember] = useState(false);
+  // Form handlers
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-  // Interpolations for smooth transition
-  const loginOpacity = anim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] });
-  const signupOpacity = anim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
+  // Animation interpolations
+  const loginOpacity = anim.interpolate({ 
+    inputRange: [0, 1], 
+    outputRange: [1, 0] 
+  });
+  const signupOpacity = anim.interpolate({ 
+    inputRange: [0, 1], 
+    outputRange: [0, 1] 
+  });
 
   return (
     <ScreenWrapper>
-      <BackButton />
-      <View style={{ flex: 1 }}>
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 0 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      <View style={styles.container}>
+        {/* Back Button - Absolute positioned in top-left corner */}
+        <BackButton
+          absolute
+          top={insets.top + 16}
+          left={20}
+          size={dimensions.backButtonSize}
+        />
+
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
         >
-          <View style={[styles.headerWrap, { marginTop: insets.top + 65 }]}> {/* 44 = BackButton size + gap */}
-            <Text style={styles.header}>Go ahead and set up you account</Text>
-            <Text style={styles.subheader}>Sign in – up to enjoy the best music experience</Text>
-          </View>
-          <KeyboardAvoidingView
-            style={{ flex: 1, justifyContent: 'flex-end' }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-              <GlassCard style={styles.card}>
-                {/* Toggle */}
-                <View style={styles.toggleRow}>
+            {/* Header Section */}
+            <View style={[
+              styles.headerSection,
+              {
+                paddingTop: insets.top + dimensions.backButtonSize + 32,
+                paddingHorizontal: dimensions.horizontalPadding,
+              }
+            ]}>
+              <Text style={[
+                styles.headerTitle,
+                { fontSize: dimensions.headerFontSize }
+              ]}>
+                Go ahead and set up you account
+              </Text>
+              <Text style={[
+                styles.headerSubtitle,
+                { fontSize: dimensions.subHeaderFontSize }
+              ]}>
+                Sign in – up to enjoy the best music experience
+              </Text>
+            </View>
+
+            {/* Spacer for flexible layout */}
+            <View style={styles.spacer} />
+
+            {/* Form Card */}
+            <GlassCard style={styles.formCard}>
+              <View style={[
+                styles.formContent,
+                { padding: dimensions.cardPadding }
+              ]}>
+                {/* Mode Toggle */}
+                <View style={styles.toggleContainer}>
                   <TouchableOpacity
-                    style={[styles.toggleBtn, mode === 'login' && styles.toggleBtnActive]}
-                    activeOpacity={0.85}
+                    style={[
+                      styles.toggleButton,
+                      mode === 'login' && styles.toggleButtonActive
+                    ]}
+                    activeOpacity={0.8}
                     onPress={() => switchMode('login')}
                   >
-                    <Text style={[styles.toggleText, mode === 'login' && styles.toggleTextActive]}>Login</Text>
+                    <Text style={[
+                      styles.toggleText,
+                      mode === 'login' && styles.toggleTextActive,
+                      { fontSize: dimensions.buttonFontSize }
+                    ]}>
+                      Login
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.toggleBtn, mode === 'signup' && styles.toggleBtnActive]}
-                    activeOpacity={0.85}
+                    style={[
+                      styles.toggleButton,
+                      mode === 'signup' && styles.toggleButtonActive
+                    ]}
+                    activeOpacity={0.8}
                     onPress={() => switchMode('signup')}
                   >
-                    <Text style={[styles.toggleText, mode === 'signup' && styles.toggleTextActive]}>Sign up</Text>
+                    <Text style={[
+                      styles.toggleText,
+                      mode === 'signup' && styles.toggleTextActive,
+                      { fontSize: dimensions.buttonFontSize }
+                    ]}>
+                      Sign up
+                    </Text>
                   </TouchableOpacity>
                 </View>
-                {/* Animated Forms */}
-                <View style={{ minHeight: 260 }}>
+
+                {/* Animated Forms Container */}
+                <View style={styles.formsContainer}>
                   {/* Login Form */}
-                  <Animated.View style={[styles.formWrap, { opacity: loginOpacity, position: mode === 'login' ? 'relative' : 'absolute', width: '100%' }]}>  
+                  <Animated.View style={[
+                    styles.formWrapper,
+                    {
+                      opacity: loginOpacity,
+                      position: mode === 'login' ? 'relative' : 'absolute',
+                    }
+                  ]}>
                     <AuthInput
                       icon="mail-outline"
                       placeholder="Email address"
-                      value={email}
-                      onChangeText={setEmail}
-                      autoCapitalize="none"
+                      value={formData.email}
+                      onChangeText={(value) => updateFormData('email', value)}
                       keyboardType="email-address"
+                      autoCapitalize="none"
+                      fontSize={dimensions.inputFontSize}
                     />
                     <AuthInput
                       icon="lock-closed-outline"
                       placeholder="Password"
-                      value={password}
-                      onChangeText={setPassword}
+                      value={formData.password}
+                      onChangeText={(value) => updateFormData('password', value)}
                       secureTextEntry
+                      fontSize={dimensions.inputFontSize}
                     />
-                    <View style={styles.rowBetween}>
-                      <TouchableOpacity style={styles.row} onPress={() => setRemember(!remember)}>
-                        <View style={[styles.checkbox, remember && styles.checkboxChecked]}>
-                          {remember && <Ionicons name="checkmark" size={16} color="#fff" />}
+                    
+                    <View style={styles.loginOptionsRow}>
+                      <TouchableOpacity 
+                        style={styles.rememberMeContainer}
+                        onPress={() => updateFormData('rememberMe', !formData.rememberMe)}
+                      >
+                        <View style={[
+                          styles.checkbox,
+                          formData.rememberMe && styles.checkboxActive
+                        ]}>
+                          {formData.rememberMe && (
+                            <Ionicons name="checkmark" size={14} color="#fff" />
+                          )}
                         </View>
-                        <Text style={styles.rememberText}>Remember me</Text>
+                        <Text style={styles.rememberMeText}>Remember me</Text>
                       </TouchableOpacity>
+                      
                       <TouchableOpacity>
-                        <Text style={styles.forgotText}>Forgot password?</Text>
+                        <Text style={styles.forgotPasswordText}>
+                          Forgot password?
+                        </Text>
                       </TouchableOpacity>
                     </View>
-                    <TouchableOpacity style={styles.mainBtn} activeOpacity={0.85}>
-                      <Text style={styles.mainBtnText}>Login</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.orText}>Or login with</Text>
-                    <View style={styles.socialRow}>
-                      <SocialBtn icon="logo-google" label="Google" onPress={() => {}} />
-                      <SocialBtn icon="logo-apple" label="Apple" onPress={() => {}} />
-                    </View>
+
+                    <ActionButton
+                      title="Login"
+                      onPress={() => {}}
+                      fontSize={dimensions.buttonFontSize}
+                    />
+                    
+                    <SocialLoginSection fontSize={dimensions.inputFontSize} />
                   </Animated.View>
-                  {/* Sign Up Form */}
-                  <Animated.View style={[styles.formWrap, { opacity: signupOpacity, position: mode === 'signup' ? 'relative' : 'absolute', width: '100%' }]}>  
+
+                  {/* Signup Form */}
+                  <Animated.View style={[
+                    styles.formWrapper,
+                    {
+                      opacity: signupOpacity,
+                      position: mode === 'signup' ? 'relative' : 'absolute',
+                    }
+                  ]}>
                     <AuthInput
                       icon="mail-outline"
                       placeholder="Email address"
-                      value={email}
-                      onChangeText={setEmail}
-                      autoCapitalize="none"
+                      value={formData.email}
+                      onChangeText={(value) => updateFormData('email', value)}
                       keyboardType="email-address"
+                      autoCapitalize="none"
+                      fontSize={dimensions.inputFontSize}
                     />
                     <AuthInput
                       icon="lock-closed-outline"
                       placeholder="Password"
-                      value={password}
-                      onChangeText={setPassword}
+                      value={formData.password}
+                      onChangeText={(value) => updateFormData('password', value)}
                       secureTextEntry
+                      fontSize={dimensions.inputFontSize}
                     />
                     <AuthInput
                       icon="lock-closed-outline"
                       placeholder="Confirm Password"
-                      value={confirm}
-                      onChangeText={setConfirm}
+                      value={formData.confirmPassword}
+                      onChangeText={(value) => updateFormData('confirmPassword', value)}
                       secureTextEntry
+                      fontSize={dimensions.inputFontSize}
                     />
-                    <TouchableOpacity style={styles.mainBtn} activeOpacity={0.85}>
-                      <Text style={styles.mainBtnText}>Sign up</Text>
-                    </TouchableOpacity>
-                    <Text style={styles.orText}>Or sign up with</Text>
-                    <View style={styles.socialRow}>
-                      <SocialBtn icon="logo-google" label="Google" onPress={() => {}} />
-                      <SocialBtn icon="logo-apple" label="Apple" onPress={() => {}} />
-                    </View>
-                    <TouchableOpacity style={{ alignSelf: 'center', marginTop: 18 }} onPress={() => switchMode('login')}>
-                      <Text style={styles.loginLink}>Already have an account? <Text style={{ textDecorationLine: 'underline', color: '#fff' }}>Login</Text></Text>
+
+                    <ActionButton
+                      title="Sign up"
+                      onPress={() => {}}
+                      fontSize={dimensions.buttonFontSize}
+                    />
+                    
+                    <SocialLoginSection 
+                      mode="signup" 
+                      fontSize={dimensions.inputFontSize}
+                    />
+                    
+                    <TouchableOpacity 
+                      style={styles.switchModeContainer}
+                      onPress={() => switchMode('login')}
+                    >
+                      <Text style={styles.switchModeText}>
+                        Already have an account?{' '}
+                        <Text style={styles.switchModeLink}>Login</Text>
+                      </Text>
                     </TouchableOpacity>
                   </Animated.View>
                 </View>
-              </GlassCard>
-            </View>
-          </KeyboardAvoidingView>
-        </ScrollView>
+              </View>
+            </GlassCard>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     </ScreenWrapper>
   );
 };
 
-// AuthInput: modular, scalable input with icon
-const AuthInput = ({ icon, ...props }) => (
-  <View style={styles.inputWrap}>
-    <Ionicons name={icon} size={20} color="rgba(255,255,255,0.7)" style={{ marginRight: 10 }} />
+// Optimized reusable components
+const AuthInput = ({ icon, fontSize = 15, ...props }) => (
+  <View style={styles.inputContainer}>
+    <Ionicons 
+      name={icon} 
+      size={20} 
+      color="rgba(255,255,255,0.7)" 
+      style={styles.inputIcon} 
+    />
     <TextInput
-      style={styles.input}
-      placeholderTextColor="rgba(255,255,255,0.45)"
+      style={[styles.textInput, { fontSize }]}
+      placeholderTextColor="rgba(255,255,255,0.5)"
       {...props}
     />
   </View>
 );
 
-// SocialBtn: modular, scalable social button
-const SocialBtn = ({ icon, label, onPress }) => (
-  <TouchableOpacity style={styles.socialBtn} activeOpacity={0.85} onPress={onPress}>
-    <Ionicons name={icon} size={20} color="#fff" style={{ marginRight: 8 }} />
-    <Text style={styles.socialBtnText}>{label}</Text>
+const ActionButton = ({ title, onPress, fontSize = 17 }) => (
+  <TouchableOpacity 
+    style={styles.actionButton} 
+    activeOpacity={0.8} 
+    onPress={onPress}
+  >
+    <Text style={[styles.actionButtonText, { fontSize }]}>
+      {title}
+    </Text>
   </TouchableOpacity>
 );
 
+const SocialButton = ({ icon, title, onPress, fontSize = 15 }) => (
+  <TouchableOpacity 
+    style={styles.socialButton} 
+    activeOpacity={0.8} 
+    onPress={onPress}
+  >
+    <Ionicons name={icon} size={20} color="#fff" style={styles.socialIcon} />
+    <Text style={[styles.socialButtonText, { fontSize }]}>
+      {title}
+    </Text>
+  </TouchableOpacity>
+);
+
+const SocialLoginSection = ({ mode = 'login', fontSize = 15 }) => (
+  <>
+    <Text style={[styles.orText, { fontSize: fontSize - 1 }]}>
+      Or {mode === 'login' ? 'login' : 'sign up'} with
+    </Text>
+    <View style={styles.socialButtonsContainer}>
+      <SocialButton
+        icon="logo-google"
+        title="Google"
+        onPress={() => {}}
+        fontSize={fontSize}
+      />
+      <SocialButton
+        icon="logo-apple"
+        title="Apple"
+        onPress={() => {}}
+        fontSize={fontSize}
+      />
+    </View>
+  </>
+);
+
 const styles = StyleSheet.create({
-  headerWrap: {
-    marginBottom: 18,
-    paddingHorizontal: 28,
+  container: {
+    flex: 1,
   },
-  header: {
-    fontFamily: DM_SANS,
+  keyboardView: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
+  headerSection: {
+    marginBottom: 20,
+  },
+  headerTitle: {
     fontWeight: '600',
-    fontSize: 24,
-    color: 'rgba(255,255,255,0.7)',
-    lineHeight: 24,
-    letterSpacing: 0,
+    color: 'rgba(255,255,255,0.9)',
+    lineHeight: 32,
     marginBottom: 8,
   },
-  subheader: {
-    fontFamily: DM_SANS,
+  headerSubtitle: {
     fontWeight: '400',
-    fontSize: 16,
     color: 'rgba(255,255,255,0.7)',
-    lineHeight: 16,
-    letterSpacing: 0,
+    lineHeight: 22,
   },
-  card: {
-    width: '100%',
-    marginBottom: 0,
-    paddingVertical: 24,
-    paddingHorizontal: 0,
-    borderRadius: 0,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
+  spacer: {
+    flex: 1,
+    minHeight: 40,
+  },
+  formCard: {
+    borderRadius: 24,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
+    marginHorizontal: 0,
   },
-  toggleRow: {
+  formContent: {
+    minHeight: 400,
+  },
+  toggleContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderRadius: 22,
-    marginBottom: 22,
-    marginHorizontal: 10,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 24,
     padding: 4,
+    marginBottom: 24,
   },
-  toggleBtn: {
+  toggleButton: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 18,
+    paddingVertical: 12,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  toggleBtnActive: {
-    backgroundColor: 'rgba(255,255,255,0.13)',
+  toggleButtonActive: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   toggleText: {
-    fontFamily: DM_SANS,
     fontWeight: '600',
-    fontSize: 17,
     color: 'rgba(255,255,255,0.7)',
   },
   toggleTextActive: {
     color: '#fff',
   },
-  formWrap: {
+  formsContainer: {
+    minHeight: 320,
+  },
+  formWrapper: {
     width: '100%',
   },
-  inputWrap: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.18)',
-    marginBottom: 16,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 16,
-    paddingVertical: 2,
+    paddingVertical: 4,
+    marginBottom: 16,
   },
-  input: {
+  inputIcon: {
+    marginRight: 12,
+  },
+  textInput: {
     flex: 1,
     color: '#fff',
-    fontFamily: DM_SANS,
     fontWeight: '400',
-    fontSize: 15,
     paddingVertical: 12,
     backgroundColor: 'transparent',
   },
-  rowBetween: {
+  loginOptionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
-    marginHorizontal: 2,
+    marginBottom: 20,
   },
-  row: {
+  rememberMeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -289,89 +461,84 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 6,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.18)',
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
   },
-  checkboxChecked: {
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderColor: '#fff',
+  checkboxActive: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(255,255,255,0.6)',
   },
-  rememberText: {
+  rememberMeText: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
-    fontFamily: DM_SANS,
     fontWeight: '400',
   },
-  forgotText: {
+  forgotPasswordText: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
-    fontFamily: DM_SANS,
     fontWeight: '400',
     textDecorationLine: 'underline',
   },
-  mainBtn: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 22,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.18)',
+  actionButton: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    marginTop: 8,
-    marginBottom: 8,
+    marginBottom: 20,
   },
-  mainBtnText: {
+  actionButtonText: {
     color: '#fff',
-    fontFamily: DM_SANS,
     fontWeight: '600',
-    fontSize: 17,
   },
   orText: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 14,
-    fontFamily: DM_SANS,
     fontWeight: '400',
     textAlign: 'center',
-    marginVertical: 8,
+    marginBottom: 16,
   },
-  socialRow: {
+  socialButtonsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 2,
-    marginBottom: 2,
     gap: 12,
-    marginHorizontal: 2,
+    marginBottom: 16,
   },
-  socialBtn: {
+  socialButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(255,255,255,0.08)',
-    borderRadius: 18,
-    borderWidth: 1.2,
-    borderColor: 'rgba(255,255,255,0.18)',
-    paddingVertical: 10,
-    marginHorizontal: 4,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+    paddingVertical: 12,
   },
-  socialBtnText: {
+  socialIcon: {
+    marginRight: 8,
+  },
+  socialButtonText: {
     color: '#fff',
-    fontFamily: DM_SANS,
     fontWeight: '600',
-    fontSize: 15,
   },
-  loginLink: {
+  switchModeContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  switchModeText: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
-    fontFamily: DM_SANS,
     fontWeight: '400',
-    textAlign: 'center',
-    marginTop: 2,
+  },
+  switchModeLink: {
+    color: '#fff',
+    textDecorationLine: 'underline',
   },
 });
 
-export default AuthScreen; 
+export default AuthScreen;
