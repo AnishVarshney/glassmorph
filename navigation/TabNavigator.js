@@ -31,7 +31,7 @@ const TabNavigator = () => {
     const currentRoute = navState.routes[navState.index];
     currentRouteName = getDeepestRouteName(currentRoute) ?? 'HomeMain';
   }
-  console.log('[TabNavigator] Render: currentRouteName =', currentRouteName);
+  // console.log('[TabNavigator] Render: currentRouteName =', currentRouteName);
 
   return (
     <>

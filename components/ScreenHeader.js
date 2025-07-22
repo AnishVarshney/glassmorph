@@ -1,65 +1,102 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { Ionicons } from '@expo/vector-icons';
+"use client"
 
-const ScreenHeader = ({ title, navigation, style }) => {
-  const canGoBack = navigation?.canGoBack?.();
+import { View, Text, StyleSheet, Dimensions } from "react-native"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { useNavigation } from "@react-navigation/native"
+import BackButton from "./BackButton"
+
+const { width } = Dimensions.get("window")
+
+const ScreenHeader = ({
+  title,
+  showBackButton = true,
+  rightComponent = null,
+  titleAlign = "center",
+  style,
+  containerStyle,
+  titleStyle,
+  backButtonProps = {},
+}) => {
+  const insets = useSafeAreaInsets()
+  const navigation = useNavigation()
+
+  const canGoBack = navigation?.canGoBack?.()
+  const shouldShowBackButton = showBackButton && canGoBack
+
   return (
-    <BlurView intensity={40} tint="dark" style={[styles.blur, style]}>
-      <View style={styles.row}>
-        {canGoBack ? (
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={28} color="#fff" />
-          </TouchableOpacity>
-        ) : (
-          <View style={styles.backBtn} />
-        )}
-        <Text style={styles.title} numberOfLines={1}>{title}</Text>
-        {/* Spacer for symmetry */}
-        <View style={styles.backBtn} />
+    <View style={[styles.container, { paddingTop: insets.top }, containerStyle]}>
+      <View style={[styles.headerContent, style]}>
+        <View style={styles.headerRow}>
+          {/* Left Section - Back Button */}
+          <View style={styles.leftSection}>
+            {shouldShowBackButton && (
+              <BackButton size={40} containerStyle={styles.backButtonContainer} {...backButtonProps} />
+            )}
+          </View>
+
+          {/* Center Section - Title */}
+          <View style={[styles.centerSection, titleAlign === "left" && styles.centerSectionLeft]}>
+            <Text style={[styles.title, titleAlign === "left" && styles.titleLeft, titleStyle]} numberOfLines={1}>
+              {title}
+            </Text>
+          </View>
+
+          {/* Right Section - Optional Component */}
+          <View style={styles.rightSection}>{rightComponent}</View>
+        </View>
       </View>
-    </BlurView>
-  );
-};
+    </View>
+  )
+}
 
 const styles = StyleSheet.create({
-  blur: {
-    paddingTop: Platform.OS === 'ios' ? 56 : 36,
-    paddingBottom: 18,
+  container: {
+    zIndex: 100,
+  },
+  headerContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: 56,
+  },
+  leftSection: {
+    width: 56,
+    alignItems: "flex-start",
+    justifyContent: "center",
+  },
+  centerSection: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 16,
+  },
+  centerSectionLeft: {
+    alignItems: "flex-start",
     paddingHorizontal: 0,
-    // borderBottomWidth: 1,
-    // borderColor: 'rgba(255,255,255,0.10)',
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
-    overflow: 'hidden',
+    paddingLeft: 16,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
+  rightSection: {
+    width: 56,
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
-  backBtn: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 22,
+  backButtonContainer: {
+    alignItems: "flex-start",
   },
   title: {
-    flex: 1,
-    textAlign: 'center',
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: '600',
-    letterSpacing: 0.1,
-    opacity: 0.95,
+    fontSize: 32,
+    color: "#fff",
+    fontWeight: "700",
+    letterSpacing: -0.5,
+    textAlign: "center",
   },
-});
+  titleLeft: {
+    textAlign: "left",
+  },
+})
 
-export default ScreenHeader; 
+export default ScreenHeader

@@ -1,68 +1,71 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+"use client"
 
-const ICON_MAP = {
-  Ionicons,
-  MaterialIcons,
-  MaterialCommunityIcons,
-};
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native"
+import { Ionicons } from "@expo/vector-icons"
 
 const SettingsOptionRow = ({
   icon,
-  iconType = 'Ionicons',
+  iconType = "Ionicons",
   label,
-  onPress,
   showArrow = false,
+  onPress,
   style,
+  disabled = false,
 }) => {
-  const IconComponent = ICON_MAP[iconType] || Ionicons;
+  const IconComponent = Ionicons
+
   return (
     <TouchableOpacity
-      style={[styles.row, style]}
+      style={[styles.container, style]}
       onPress={onPress}
+      disabled={disabled || !onPress}
       activeOpacity={0.7}
     >
-      <View style={styles.iconWrap}>
-        <IconComponent name={icon} size={22} color="#fff" />
+      <View style={styles.leftSection}>
+        <View style={styles.iconContainer}>
+          <IconComponent name={icon} size={24} color="rgba(255,255,255,0.8)" />
+        </View>
+        <Text style={styles.label}>{label}</Text>
       </View>
-      <Text style={styles.label}>{label}</Text>
+
       {showArrow && (
-        <Ionicons name="chevron-forward" size={20} color="#fff" style={styles.arrow} />
+        <View style={styles.rightSection}>
+          <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.5)" />
+        </View>
       )}
     </TouchableOpacity>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 16,
-    paddingHorizontal: 0,
-    borderBottomWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    // backgroundColor: 'rgba(255,255,255,0.03)',
-    borderRadius: 12,
-    marginBottom: 2,
+    paddingHorizontal: 20,
+    minHeight: 56,
   },
-  iconWrap: {
+  leftSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  iconContainer: {
     width: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
     marginRight: 16,
   },
   label: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
+    color: "#fff",
+    fontWeight: "400",
+    letterSpacing: -0.2,
     flex: 1,
-    fontWeight: '400',
-    letterSpacing: 0.1,
   },
-  arrow: {
-    marginLeft: 8,
-    opacity: 0.7,
+  rightSection: {
+    marginLeft: 16,
   },
-});
+})
 
-export default SettingsOptionRow; 
+export default SettingsOptionRow
