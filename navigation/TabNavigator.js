@@ -11,7 +11,7 @@ import PlayerBar from '../components/PlayerBar';
 const Tab = createBottomTabNavigator();
 
 const MAIN_TAB_ROOTS = ['HomeMain', 'Stations', 'Favorites', 'Search'];
-const HIDDEN_ROUTES = ['Settings', 'Account', 'ChangePassword', 'Player'];
+const HIDDEN_ROUTES = ['Settings', 'Account', 'ChangePassword', ];
 
 function getDeepestRouteName(route) {
   if (!route) return null;
@@ -35,7 +35,7 @@ const TabNavigator = () => {
 
   return (
     <>
-      <Tab.Navigator
+    <Tab.Navigator
         tabBar={props => {
           const currentRoute = props.state.routes[props.state.index];
           const focusedRouteName = getDeepestRouteName(currentRoute) ?? 'HomeMain';
@@ -45,17 +45,17 @@ const TabNavigator = () => {
           }
           return <CustomTabBar {...props} />;
         }}
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
         <Tab.Screen name="Home" component={HomeStack} />
-        <Tab.Screen name="Stations" component={StationsScreen} />
-        <Tab.Screen name="Favorites" component={FavoritesScreen} />
-        <Tab.Screen name="Search" component={SearchScreen} />
-      </Tab.Navigator>
+      <Tab.Screen name="Stations" component={StationsScreen} />
+      <Tab.Screen name="Favorites" component={FavoritesScreen} />
+      <Tab.Screen name="Search" component={SearchScreen} />
+    </Tab.Navigator>
       {/* Render PlayerBar ONLY on the 4 main tab roots */}
-      {MAIN_TAB_ROOTS.includes(currentRouteName) && <PlayerBar />}
+      {/* {MAIN_TAB_ROOTS.includes(currentRouteName) && <PlayerBar />} */}
     </>
   );
 };

@@ -200,7 +200,7 @@ const HomeScreen = ({ navigation }) => {
             onSeeAll={() => navigation.navigate('Recents')}
           />
         </ScrollView>
-          {/* <PlayerBar /> */}
+          <PlayerBar />
       </View>
     </ScreenWrapper>
   );
