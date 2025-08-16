@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Image, Platform } from 'react-native';
 import { Video } from 'expo-av';
 import { BlurView } from 'expo-blur';
+
 import Grains from '../assets/Grains.svg'; // If using react-native-svg
 import Grain from '../assets/Grain.png'; // If using react-native-svg
 
@@ -40,6 +41,9 @@ export default function ScreenWrapper({ children }) {
         tint="dark"
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
+        experimentalBlurMethod="dimezisBlurView" // Add this line
+        blurReductionFactor={80}
+        
       />
       {/* 6. Content */}
       <View style={styles.content}>{children}</View>
