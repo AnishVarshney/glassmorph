@@ -96,6 +96,30 @@ The app features:
    npm run android
    ```
 
+### If Android auto-open fails (Expo Go / emulator)
+
+Some Android emulator images have a `monkey` tool that exits with code `251` (“SYS_KEYS has no physical keys”), which prevents Expo’s auto-open from working.
+
+With Metro already running (`npm start`), you can open Expo Go manually via:
+
+```bash
+npm run open:android
+```
+
+### If the emulator can’t reach Metro (common on Android)
+
+Use localhost mode (best for Android emulator):
+
+```bash
+npm run start:emulator
+```
+
+Then open the project URL directly in Expo Go:
+
+```bash
+npm run open:android:url
+```
+
 ## 📁 Project Structure
 
 ```
