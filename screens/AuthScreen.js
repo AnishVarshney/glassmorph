@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -20,8 +20,8 @@ import BackButton from '../components/BackButton';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// Responsive dimensions
-const getResponsiveDimensions = () => {
+// Custom hook for responsive dimensions
+const useResponsiveDimensions = () => {
   const isSmallScreen = SCREEN_WIDTH < 375;
   const isMediumScreen = SCREEN_WIDTH >= 375 && SCREEN_WIDTH < 414;
   const isLargeScreen = SCREEN_WIDTH >= 414;
@@ -37,22 +37,57 @@ const getResponsiveDimensions = () => {
   };
 };
 
-const AuthScreen = ({ navigation }) => {
-  const [mode, setMode] = useState('login');
-  const [formData, setFormData] = useState({
+// Custom hook for authentication form state and logic
+const useAuthForm = () => {
+  const [mode, setMode] = React.useState('login');
+  const [formData, setFormData] = React.useState({
     email: '',
     password: '',
     confirmPassword: '',
     rememberMe: false,
   });
-  
-  const anim = useRef(new Animated.Value(0)).current;
-  const insets = useSafeAreaInsets();
-  const dimensions = getResponsiveDimensions();
 
-  // Optimized animation
-  const switchMode = (nextMode) => {
-    if (mode === nextMode) return;
+  const updateFormData = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      confirmPassword: '',
+      rememberMe: false,
+    });
+  };
+
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      return { isValid: false, error: 'Please fill in all required fields' };
+    }
+    
+    if (mode === 'signup' && formData.password !== formData.confirmPassword) {
+      return { isValid: false, error: 'Passwords do not match' };
+    }
+    
+    return { isValid: true };
+  };
+
+  return {
+    mode,
+    setMode,
+    formData,
+    updateFormData,
+    resetForm,
+    validateForm,
+  };
+};
+
+// Custom hook for animation logic
+const useAuthAnimation = () => {
+  const anim = React.useRef(new Animated.Value(0)).current;
+
+  const switchMode = (nextMode, currentMode) => {
+    if (currentMode === nextMode) return;
     
     Animated.timing(anim, {
       toValue: nextMode === 'login' ? 0 : 1,
@@ -60,28 +95,95 @@ const AuthScreen = ({ navigation }) => {
       easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
-    setMode(nextMode);
   };
 
-  // Form handlers
-  const updateFormData = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  // Animation interpolations
   const loginOpacity = anim.interpolate({ 
     inputRange: [0, 1], 
     outputRange: [1, 0] 
   });
+  
   const signupOpacity = anim.interpolate({ 
     inputRange: [0, 1], 
     outputRange: [0, 1] 
   });
 
+  return {
+    switchMode,
+    loginOpacity,
+    signupOpacity,
+  };
+};
+
+// Authentication service interface (following DIP)
+class AuthService {
+  async loginWithEmail(email, password) {
+    // TODO: Implement email login
+    console.log('Login with email:', email, password);
+  }
+
+  async signupWithEmail(email, password) {
+    // TODO: Implement email signup
+    console.log('Signup with email:', email, password);
+  }
+
+  async loginWithGoogle() {
+    // TODO: Implement Google login
+    console.log('Login with Google');
+  }
+
+  async loginWithApple() {
+    // TODO: Implement Apple login
+    console.log('Login with Apple');
+  }
+}
+
+// Main AuthScreen component (now focused only on UI orchestration)
+const AuthScreen = ({ navigation }) => {
+  const dimensions = useResponsiveDimensions();
+  const { mode, setMode, formData, updateFormData, validateForm } = useAuthForm();
+  const { switchMode, loginOpacity, signupOpacity } = useAuthAnimation();
+  const insets = useSafeAreaInsets();
+  const authService = React.useMemo(() => new AuthService(), []);
+
+  const handleModeSwitch = (nextMode) => {
+    switchMode(nextMode, mode);
+    setMode(nextMode);
+  };
+
+  const handleSubmit = async () => {
+    const validation = validateForm();
+    if (!validation.isValid) {
+      // TODO: Show error message
+      console.log('Validation error:', validation.error);
+      return;
+    }
+
+    try {
+      if (mode === 'login') {
+        await authService.loginWithEmail(formData.email, formData.password);
+      } else {
+        await authService.signupWithEmail(formData.email, formData.password);
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+    }
+  };
+
+  const handleSocialLogin = async (provider) => {
+    try {
+      if (provider === 'google') {
+        await authService.loginWithGoogle();
+      } else if (provider === 'apple') {
+        await authService.loginWithApple();
+      }
+    } catch (error) {
+      console.error('Social login error:', error);
+    }
+  };
+
   return (
     <ScreenWrapper>
       <View style={styles.container}>
-        {/* Back Button - Absolute positioned in top-left corner */}
         <BackButton
           absolute
           top={insets.top + 16}
@@ -100,188 +202,45 @@ const AuthScreen = ({ navigation }) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Header Section */}
-            <View style={[
-              styles.headerSection,
-              {
-                paddingTop: insets.top + dimensions.backButtonSize + 32,
-                paddingHorizontal: dimensions.horizontalPadding,
-              }
-            ]}>
-              <Text style={[
-                styles.headerTitle,
-                { fontSize: dimensions.headerFontSize }
-              ]}>
-                Go ahead and set up you account
-              </Text>
-              <Text style={[
-                styles.headerSubtitle,
-                { fontSize: dimensions.subHeaderFontSize }
-              ]}>
-                Sign in – up to enjoy the best music experience
-              </Text>
-            </View>
+            <AuthHeader 
+              insets={insets} 
+              dimensions={dimensions} 
+            />
 
-            {/* Spacer for flexible layout */}
             <View style={styles.spacer} />
 
-            {/* Form Card */}
             <GlassCard style={styles.formCard}>
               <View style={[
                 styles.formContent,
                 { padding: dimensions.cardPadding }
               ]}>
-                {/* Mode Toggle */}
-                <View style={styles.toggleContainer}>
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      mode === 'login' && styles.toggleButtonActive
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={() => switchMode('login')}
-                  >
-                    <Text style={[
-                      styles.toggleText,
-                      mode === 'login' && styles.toggleTextActive,
-                      { fontSize: dimensions.buttonFontSize }
-                    ]}>
-                      Login
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.toggleButton,
-                      mode === 'signup' && styles.toggleButtonActive
-                    ]}
-                    activeOpacity={0.8}
-                    onPress={() => switchMode('signup')}
-                  >
-                    <Text style={[
-                      styles.toggleText,
-                      mode === 'signup' && styles.toggleTextActive,
-                      { fontSize: dimensions.buttonFontSize }
-                    ]}>
-                      Sign up
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                <ModeToggle 
+                  mode={mode}
+                  onModeSwitch={handleModeSwitch}
+                  dimensions={dimensions}
+                />
 
-                {/* Animated Forms Container */}
                 <View style={styles.formsContainer}>
-                  {/* Login Form */}
-                  <Animated.View style={[
-                    styles.formWrapper,
-                    {
-                      opacity: loginOpacity,
-                      position: mode === 'login' ? 'relative' : 'absolute',
-                    }
-                  ]}>
-                    <AuthInput
-                      icon="mail-outline"
-                      placeholder="Email address"
-                      value={formData.email}
-                      onChangeText={(value) => updateFormData('email', value)}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      fontSize={dimensions.inputFontSize}
-                    />
-                    <AuthInput
-                      icon="lock-closed-outline"
-                      placeholder="Password"
-                      value={formData.password}
-                      onChangeText={(value) => updateFormData('password', value)}
-                      secureTextEntry
-                      fontSize={dimensions.inputFontSize}
-                    />
-                    
-                    <View style={styles.loginOptionsRow}>
-                      <TouchableOpacity 
-                        style={styles.rememberMeContainer}
-                        onPress={() => updateFormData('rememberMe', !formData.rememberMe)}
-                      >
-                        <View style={[
-                          styles.checkbox,
-                          formData.rememberMe && styles.checkboxActive
-                        ]}>
-                          {formData.rememberMe && (
-                            <Ionicons name="checkmark" size={14} color="#fff" />
-                          )}
-                        </View>
-                        <Text style={styles.rememberMeText}>Remember me</Text>
-                      </TouchableOpacity>
-                      
-                      <TouchableOpacity>
-                        <Text style={styles.forgotPasswordText}>
-                          Forgot password?
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-
-                    <ActionButton
-                      title="Login"
-                      onPress={() => {}}
-                      fontSize={dimensions.buttonFontSize}
-                    />
-                    
-                    <SocialLoginSection fontSize={dimensions.inputFontSize} />
-                  </Animated.View>
-
-                  {/* Signup Form */}
-                  <Animated.View style={[
-                    styles.formWrapper,
-                    {
-                      opacity: signupOpacity,
-                      position: mode === 'signup' ? 'relative' : 'absolute',
-                    }
-                  ]}>
-                    <AuthInput
-                      icon="mail-outline"
-                      placeholder="Email address"
-                      value={formData.email}
-                      onChangeText={(value) => updateFormData('email', value)}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      fontSize={dimensions.inputFontSize}
-                    />
-                    <AuthInput
-                      icon="lock-closed-outline"
-                      placeholder="Password"
-                      value={formData.password}
-                      onChangeText={(value) => updateFormData('password', value)}
-                      secureTextEntry
-                      fontSize={dimensions.inputFontSize}
-                    />
-                    <AuthInput
-                      icon="lock-closed-outline"
-                      placeholder="Confirm Password"
-                      value={formData.confirmPassword}
-                      onChangeText={(value) => updateFormData('confirmPassword', value)}
-                      secureTextEntry
-                      fontSize={dimensions.inputFontSize}
-                    />
-
-                    <ActionButton
-                      title="Sign up"
-                      onPress={() => {}}
-                      fontSize={dimensions.buttonFontSize}
-                    />
-                    
-                    <SocialLoginSection 
-                      mode="signup" 
-                      fontSize={dimensions.inputFontSize}
-                    />
-                    
-                    <TouchableOpacity 
-                      style={styles.switchModeContainer}
-                      onPress={() => switchMode('login')}
-                    >
-                      <Text style={styles.switchModeText}>
-                        Already have an account?{' '}
-                        <Text style={styles.switchModeLink}>Login</Text>
-                      </Text>
-                    </TouchableOpacity>
-                  </Animated.View>
+                  <LoginForm
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onSubmit={handleSubmit}
+                    onSocialLogin={handleSocialLogin}
+                    opacity={loginOpacity}
+                    isVisible={mode === 'login'}
+                    dimensions={dimensions}
+                  />
+                  
+                  <SignupForm
+                    formData={formData}
+                    updateFormData={updateFormData}
+                    onSubmit={handleSubmit}
+                    onSocialLogin={handleSocialLogin}
+                    onSwitchToLogin={() => handleModeSwitch('login')}
+                    opacity={signupOpacity}
+                    isVisible={mode === 'signup'}
+                    dimensions={dimensions}
+                  />
                 </View>
               </View>
             </GlassCard>
@@ -292,7 +251,200 @@ const AuthScreen = ({ navigation }) => {
   );
 };
 
-// Optimized reusable components
+// Header component
+const AuthHeader = ({ insets, dimensions }) => (
+  <View style={[
+    styles.headerSection,
+    {
+      paddingTop: insets.top + dimensions.backButtonSize + 32,
+      paddingHorizontal: dimensions.horizontalPadding,
+    }
+  ]}>
+    <Text style={[
+      styles.headerTitle,
+      { fontSize: dimensions.headerFontSize }
+    ]}>
+      Go ahead and set up you account
+    </Text>
+    <Text style={[
+      styles.headerSubtitle,
+      { fontSize: dimensions.subHeaderFontSize }
+    ]}>
+      Sign in – up to enjoy the best music experience
+    </Text>
+  </View>
+);
+
+// Mode toggle component
+const ModeToggle = ({ mode, onModeSwitch, dimensions }) => (
+  <View style={styles.toggleContainer}>
+    <TouchableOpacity
+      style={[
+        styles.toggleButton,
+        mode === 'login' && styles.toggleButtonActive
+      ]}
+      activeOpacity={0.8}
+      onPress={() => onModeSwitch('login')}
+    >
+      <Text style={[
+        styles.toggleText,
+        mode === 'login' && styles.toggleTextActive,
+        { fontSize: dimensions.buttonFontSize }
+      ]}>
+        Login
+      </Text>
+    </TouchableOpacity>
+    <TouchableOpacity
+      style={[
+        styles.toggleButton,
+        mode === 'signup' && styles.toggleButtonActive
+      ]}
+      activeOpacity={0.8}
+      onPress={() => onModeSwitch('signup')}
+    >
+      <Text style={[
+        styles.toggleText,
+        mode === 'signup' && styles.toggleTextActive,
+        { fontSize: dimensions.buttonFontSize }
+      ]}>
+        Sign up
+      </Text>
+    </TouchableOpacity>
+  </View>
+);
+
+// Login form component
+const LoginForm = ({ formData, updateFormData, onSubmit, onSocialLogin, opacity, isVisible, dimensions }) => (
+  <Animated.View style={[
+    styles.formWrapper,
+    {
+      opacity,
+      position: isVisible ? 'relative' : 'absolute',
+    }
+  ]}>
+    <AuthInput
+      icon="mail-outline"
+      placeholder="Email address"
+      value={formData.email}
+      onChangeText={(value) => updateFormData('email', value)}
+      keyboardType="email-address"
+      autoCapitalize="none"
+      fontSize={dimensions.inputFontSize}
+    />
+    <AuthInput
+      icon="lock-closed-outline"
+      placeholder="Password"
+      value={formData.password}
+      onChangeText={(value) => updateFormData('password', value)}
+      secureTextEntry
+      fontSize={dimensions.inputFontSize}
+    />
+    
+    <LoginOptions 
+      rememberMe={formData.rememberMe}
+      onRememberMeChange={(value) => updateFormData('rememberMe', value)}
+    />
+
+    <ActionButton
+      title="Login"
+      onPress={onSubmit}
+      fontSize={dimensions.buttonFontSize}
+    />
+    
+    <SocialLoginSection 
+      mode="login" 
+      fontSize={dimensions.inputFontSize}
+      onSocialLogin={onSocialLogin}
+    />
+  </Animated.View>
+);
+
+// Signup form component
+const SignupForm = ({ formData, updateFormData, onSubmit, onSocialLogin, onSwitchToLogin, opacity, isVisible, dimensions }) => (
+  <Animated.View style={[
+    styles.formWrapper,
+    {
+      opacity,
+      position: isVisible ? 'relative' : 'absolute',
+    }
+  ]}>
+    <AuthInput
+      icon="mail-outline"
+      placeholder="Email address"
+      value={formData.email}
+      onChangeText={(value) => updateFormData('email', value)}
+      keyboardType="email-address"
+      autoCapitalize="none"
+      fontSize={dimensions.inputFontSize}
+    />
+    <AuthInput
+      icon="lock-closed-outline"
+      placeholder="Password"
+      value={formData.password}
+      onChangeText={(value) => updateFormData('password', value)}
+      secureTextEntry
+      fontSize={dimensions.inputFontSize}
+    />
+    <AuthInput
+      icon="lock-closed-outline"
+      placeholder="Confirm Password"
+      value={formData.confirmPassword}
+      onChangeText={(value) => updateFormData('confirmPassword', value)}
+      secureTextEntry
+      fontSize={dimensions.inputFontSize}
+    />
+
+    <ActionButton
+      title="Sign up"
+      onPress={onSubmit}
+      fontSize={dimensions.buttonFontSize}
+    />
+    
+    <SocialLoginSection 
+      mode="signup" 
+      fontSize={dimensions.inputFontSize}
+      onSocialLogin={onSocialLogin}
+    />
+    
+    <TouchableOpacity 
+      style={styles.switchModeContainer}
+      onPress={onSwitchToLogin}
+    >
+      <Text style={styles.switchModeText}>
+        Already have an account?{' '}
+        <Text style={styles.switchModeLink}>Login</Text>
+      </Text>
+    </TouchableOpacity>
+  </Animated.View>
+);
+
+// Login options component
+const LoginOptions = ({ rememberMe, onRememberMeChange }) => (
+  <View style={styles.loginOptionsRow}>
+    <TouchableOpacity 
+      style={styles.rememberMeContainer}
+      onPress={() => onRememberMeChange(!rememberMe)}
+    >
+      <View style={[
+        styles.checkbox,
+        rememberMe && styles.checkboxActive
+      ]}>
+        {rememberMe && (
+          <Ionicons name="checkmark" size={14} color="#fff" />
+        )}
+      </View>
+      <Text style={styles.rememberMeText}>Remember me</Text>
+    </TouchableOpacity>
+    
+    <TouchableOpacity>
+      <Text style={styles.forgotPasswordText}>
+        Forgot password?
+      </Text>
+    </TouchableOpacity>
+  </View>
+);
+
+// Reusable components
 const AuthInput = ({ icon, fontSize = 15, ...props }) => (
   <View style={styles.inputContainer}>
     <Ionicons 
@@ -334,7 +486,7 @@ const SocialButton = ({ icon, title, onPress, fontSize = 15 }) => (
   </TouchableOpacity>
 );
 
-const SocialLoginSection = ({ mode = 'login', fontSize = 15 }) => (
+const SocialLoginSection = ({ mode = 'login', fontSize = 15, onSocialLogin }) => (
   <>
     <Text style={[styles.orText, { fontSize: fontSize - 1 }]}>
       Or {mode === 'login' ? 'login' : 'sign up'} with
@@ -343,13 +495,13 @@ const SocialLoginSection = ({ mode = 'login', fontSize = 15 }) => (
       <SocialButton
         icon="logo-google"
         title="Google"
-        onPress={() => {}}
+        onPress={() => onSocialLogin('google')}
         fontSize={fontSize}
       />
       <SocialButton
         icon="logo-apple"
         title="Apple"
-        onPress={() => {}}
+        onPress={() => onSocialLogin('apple')}
         fontSize={fontSize}
       />
     </View>
