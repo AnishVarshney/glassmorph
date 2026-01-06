@@ -9,7 +9,9 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "open:android": "adb shell monkey -p host.exp.exponent -c android.intent.category.LAUNCHER --pct-syskeys 0 1 || adb shell am start -n host.exp.exponent/.experience.HomeActivity",
-    "open:android:url": "adb shell am start -a android.intent.action.VIEW -d \"exp://10.0.2.2:8081\" host.exp.exponent"
+    "open:android:url": "adb shell am start -a android.intent.action.VIEW -d \"exp://10.0.2.2:8081\" host.exp.exponent",
+    "open:ios": "node -e \"const {execSync}=require('child_process'); const j=JSON.parse(execSync('xcrun simctl list -j devices available',{stdio:['ignore','pipe','ignore']}).toString()); const dev=Object.values(j.devices).flat().find(d=>d.isAvailable && /^iPhone/.test(d.name)); if(!dev){console.error('No available iPhone simulator found. Open Xcode → Settings → Platforms to install a simulator.'); process.exit(1);} if(dev.state!=='Booted'){execSync('xcrun simctl boot '+dev.udid,{stdio:'inherit'});} execSync('open -a Simulator'); console.log('Using',dev.name,dev.udid);\"",
+    "open:ios:url": "xcrun simctl openurl booted \"exp://127.0.0.1:8081\""
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",

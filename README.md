@@ -120,6 +120,18 @@ Then open the project URL directly in Expo Go:
 npm run open:android:url
 ```
 
+### If iOS Simulator fails with “Invalid device or device pair”
+
+This happens when Expo tries to boot a stale simulator UUID that no longer exists (e.g., you deleted that simulator in Xcode).
+
+Boot an available iPhone simulator and open the project via localhost:
+
+```bash
+npm run start:emulator
+npm run open:ios
+npm run open:ios:url
+```
+
 ## 📁 Project Structure
 
 ```
